@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+  <h1>Lista de IAs</h1>
+  <button class="btn btn-success" data-toggle="modal" data-target="#addIAModal">
+    <i class="bi bi-plus-circle"></i> Adicionar
+  </button>
+</div>
+
+<!-- Modal para Adicionar IA -->
+<div class="modal fade" id="addIAModal" tabindex="-1" aria-labelledby="addIAModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form action="/create-ia" method="POST">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addIAModalLabel">Adicionar Nova IA</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- Nome -->
+          <div class="form-group">
+            <label for="iaName">Nome</label>
+            <input type="text" class="form-control" id="iaName" name="name" required>
+          </div>
+          <!-- Telefone -->
+          <div class="form-group">
+            <label for="iaPhone">Telefone</label>
+            <input type="text" class="form-control" id="iaPhone" name="phone_number" required>
+          </div>
+          <!-- Canal -->
+          <div class="form-group">
+            <label for="iaChannel">Canal</label>
+            <select class="form-control" id="iaChannel" name="channel" required>
+              <option value="Whatsapp">Whatsapp</option>
+            </select>
+          </div>
+          <!-- IA Usada -->
+          <div class="form-group">
+            <label for="iaUsed">IA Usada</label>
+            <select class="form-control" id="iaUsed" name="ia_used" required>
+              <option value="Openai">Openai</option>
+            </select>
+          </div>
+          <!-- API Key -->
+          <div class="form-group">
+            <label for="iaApikey">API Key</label>
+            <input type="text" class="form-control" id="iaApikey" name="apikey" required>
+          </div>
+          <!-- Modelo a ser usado -->
+          <div class="form-group">
+            <label for="iaModel">Modelo a ser usado</label>
+            <input type="text" class="form-control" id="iaModel" name="model" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+          <button type="submit" class="btn btn-primary">Criar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  {% for ia in ias %}
+  <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">{{ ia.name }}</h5>
+          <div>
+            <!-- Botão de Editar -->
+            <button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#editIAModal{{ ia.id }}" title="Editar IA">
+              <i class="bi bi-pencil-square"></i>
+            </button>
+            <!-- Botão de Deletar -->
+            <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteIAModal{{ ia.id }}" title="Deletar IA">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+        <p class="card-text mt-2"><strong>Telefone:</strong> {{ ia.phone_number }}</p>
+        <p class="card-text"><strong>Status:</strong>
+          {% if ia.status %}
+            Ativo
+          {% else %}
+            Inativo
+          {% endif %}
+        </p>
+        <div class="container">
+          <button class="btn btn-primary btn-block mb-2" data-toggle="modal" data-target="#promptModal{{ ia.id }}">
+            <i class="bi bi-chat-left-text"></i> Prompt
+          </button>
+          <a href="{{ url_for('get_leads_ia', ia_id=ia.id) }}" class="btn btn-primary btn-block">
+            <i class="bi bi-people"></i> Leads
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para Editar IA -->
+  <div class="modal fade" id="editIAModal{{ ia.id }}" tabindex="-1" aria-labelledby="editIAModalLabel{{ ia.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form action="/edit-ia/{{ ia.id }}" method="POST">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editIAModalLabel{{ ia.id }}">Editar IA - {{ ia.name }}</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <!-- Nome -->
+            <div class="form-group">
+              <label for="editIaName{{ ia.id }}">Nome</label>
+              <input type="text" class="form-control" id="editIaName{{ ia.id }}" name="name" value="{{ ia.name }}" required>
+            </div>
+            <!-- Telefone -->
+            <div class="form-group">
+              <label for="editIaPhone{{ ia.id }}">Telefone</label>
+              <input type="text" class="form-control" id="editIaPhone{{ ia.id }}" name="phone_number" value="{{ ia.phone_number }}" required>
+            </div>
+            <!-- Canal -->
+            <div class="form-group">
+              <label for="editIaChannel{{ ia.id }}">Canal</label>
+              <select class="form-control" id="editIaChannel{{ ia.id }}" name="channel" required>
+                <option value="Whatsapp" {% if ia.configs and ia.configs[0].channel == "Whatsapp" %}selected{% endif %}>Whatsapp</option>
+              </select>
+            </div>
+            <!-- IA Usada -->
+            <div class="form-group">
+              <label for="editIaUsed{{ ia.id }}">IA Usada</label>
+              <select class="form-control" id="editIaUsed{{ ia.id }}" name="ia_used" required>
+                <option value="Openai" {% if ia.configs and ia.configs[0].ai_api == "Openai" %}selected{% endif %}>Openai</option>
+              </select>
+            </div>
+            <!-- API Key -->
+            <div class="form-group">
+              <label for="editIaApikey{{ ia.id }}">API Key</label>
+              <input type="text" class="form-control" id="editIaApikey{{ ia.id }}" name="apikey" value="{% if ia.configs %}{{ia.configs[0].credentials.api_key}}{% endif %}" required>
+            </div>
+            <!-- Modelo a ser usado -->
+            <div class="form-group">
+              <label for="editIaModel{{ ia.id }}">Modelo a ser usado</label>
+              <input type="text" class="form-control" id="editIaModel{{ ia.id }}" name="model" value="{% if ia.configs %}{{ ia.configs[0].credentials.ai_model }}{% endif %}" required>
+            </div>
+            <!-- Status com Radio Buttons -->
+            <div class="form-group">
+              <label>Status</label>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="status" id="statusTrue{{ ia.id }}" value="True" {% if ia.status %}checked{% endif %}>
+                <label class="form-check-label" for="statusTrue{{ ia.id }}">
+                  Ativo
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="status" id="statusFalse{{ ia.id }}" value="False" {% if not ia.status %}checked{% endif %}>
+                <label class="form-check-label" for="statusFalse{{ ia.id }}">
+                  Inativo
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+            <button type="submit" class="btn btn-primary">Atualizar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para Deletar IA -->
+  <div class="modal fade" id="deleteIAModal{{ ia.id }}" tabindex="-1" aria-labelledby="deleteIAModalLabel{{ ia.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form action="/delete-ia/{{ ia.id }}" method="POST">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteIAModalLabel{{ ia.id }}">Confirmar Exclusão</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>Tem certeza que deseja excluir a IA <strong>{{ ia.name }}</strong>?</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-danger">Excluir</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para exibição do prompt -->
+  <div class="modal fade" id="promptModal{{ ia.id }}" tabindex="-1" aria-labelledby="promptModalLabel{{ ia.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="promptModalLabel{{ ia.id }}">Prompt Atual - {{ ia.name }}</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          {% for prompt in ia.prompts %}
+          <div class="card-body">
+                    <textarea class="form-control" rows="10" readonly>{{ prompt.text }}</textarea>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

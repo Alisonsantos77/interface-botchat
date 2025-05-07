@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<!-- Bootstrap CSS -->
+		<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+		<!-- Bootstrap Icons -->
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css" />
+		<link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet" />
+		<link rel="icon" type="image/png" href="{{ url_for('static', filename='img/chatbotacademylogo.png') }}">
+		<title>ChatBot Academy</title>
+		<style>
+			/* Estilos personalizados para identidade visual */
+			body {
+				background-color: #fff;
+			}
+			/* Sidebar fixa com altura total da tela */
+			#sidebar-wrapper {
+				background-color: #f8f9fa;
+				position: fixed;
+				top: 0;
+				left: 0;
+				height: 100vh;
+				width: 250px;
+				overflow-y: auto;
+				border-right: 1px solid #255267;
+				transition: all 0.3s ease;
+			}
+			.sidebar-heading {
+				font-weight: bold;
+				color: #255267;
+				padding: 1rem;
+			}
+			.list-group-item {
+				background-color: #f8f9fa;
+				color: #255267;
+				border: none;
+			}
+
+			.img-logo {
+				border-radius: 100%;
+				object-fit: cover;
+				margin-top: 15%;
+				margin-bottom: 5%;
+				border: none;
+			}
+
+			.list-group-item:hover {
+				background-color: #e9ecef;
+				color: #255267;
+			}
+			/* Ajuste do conteúdo da página para não ficar atrás da sidebar */
+			#page-content-wrapper {
+				margin-left: 250px;
+				width: calc(100% - 250px);
+				transition: all 0.3s ease;
+			}
+			/* Estado toggled: sidebar escondida */
+			#wrapper.toggled #sidebar-wrapper {
+				margin-left: -250px;
+			}
+			#wrapper.toggled #page-content-wrapper {
+				margin-left: 0;
+				width: 100%;
+			}
+			/* Navbar personalizada */
+			.navbar-light {
+				background-color: #fff;
+				border-bottom: 1px solid #255267;
+			}
+			/* Botões com a cor de destaque */
+			.btn-primary {
+				background-color: #255267;
+				border-color: #255267;
+			}
+			.btn-primary:hover {
+				background-color: #1e4252;
+				border-color: #1e4252;
+			}
+			.user {
+				width: 100%;
+				align-items: center;
+				margin-bottom: 20px;
+				display: flex;
+				justify-content: center;
+				flex-direction: column;
+			}
+			/* Responsividade para dispositivos menores */
+			@media (max-width: 768px) {
+				#sidebar-wrapper {
+					width: 100%;
+					height: auto;
+					position: relative;
+				}
+				#page-content-wrapper {
+					margin-left: 0;
+					width: 100%;
+				}
+				#wrapper.toggled #sidebar-wrapper {
+					margin-left: -100%;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div class="d-flex" id="wrapper">
+			<!-- Sidebar -->
+			<div class="bg-light border-right" id="sidebar-wrapper">
+				<div class="user">
+
+					<img src="{{ url_for('static', filename='img/chatbotacademylogo.png') }}" class="img-logo" width="100" height="100">
+
+				</div>
+				<div class="list-group list-group-flush">
+					<a href="{{ url_for('index') }}" class="list-group-item list-group-item-action bg-light"> <i class="bi bi-robot"></i> IAs </a>
+					<a href="{{ url_for('get_prompts_ia') }}" class="list-group-item list-group-item-action bg-light"> <i class="bi bi-chat-left-text"></i> Prompts </a>
+				</div>
+				
+			</div>
+			<!-- /#sidebar-wrapper -->
+
+			<!-- Page Content -->
+			<div id="page-content-wrapper">
+				<div class="container-fluid">{% block content %}{% endblock %}</div>
+			</div>
+			<!-- /#page-content-wrapper -->
+		</div>
+		<!-- Scripts do Bootstrap e dependências -->
+		<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+		<script>
+			$("#menu-toggle").click(function (e) {
+				e.preventDefault();
+				$("#wrapper").toggleClass("toggled");
+			});
+		</script>
+	</body>
+</html>

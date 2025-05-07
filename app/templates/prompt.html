@@ -1,0 +1,160 @@
+{% extends "base.html" %} {% block content %}
+<div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+	<h1>Lista de Prompts</h1>
+	<!-- Botão para adicionar novo prompt -->
+	<button class="btn btn-success" data-toggle="modal" data-target="#newPromptModal"><i class="bi bi-plus-circle"></i> Adicionar Novo Prompt</button>
+</div>
+
+<!-- Modal para Adicionar Novo Prompt -->
+<div class="modal fade" id="newPromptModal" tabindex="-1" aria-labelledby="newPromptModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<form id="newPromptForm" method="POST" action="">
+				<div class="modal-header">
+					<h5 class="modal-title" id="newPromptModalLabel">Adicionar Novo Prompt</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<!-- Select para IA -->
+					<div class="form-group">
+						<label for="iaSelect">IA</label>
+						<select class="form-control" id="iaSelect" name="ia_id" required>
+							{% for ia in unique_ias %}
+							<option value="{{ ia.id }}">{{ ia.ia_name }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<!-- Textarea para o prompt -->
+					<div class="form-group">
+						<label for="newPromptText">Texto do Prompt</label>
+						<textarea class="form-control" id="newPromptText" name="text" rows="10" required></textarea>
+					</div>
+					<!-- Radio buttons para status -->
+					<div class="form-group">
+						<label>Status</label>
+						<div class="form-check">
+							<input class="form-check-input" type="radio" name="status" id="newPromptStatusTrue" value="True" checked />
+							<label class="form-check-label" for="newPromptStatusTrue"> Ativo </label>
+						</div>
+						<div class="form-check">
+							<input class="form-check-input" type="radio" name="status" id="newPromptStatusFalse" value="False" />
+							<label class="form-check-label" for="newPromptStatusFalse"> Inativo </label>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+					<button type="submit" class="btn btn-primary">Adicionar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- Cards dos Prompts -->
+<div class="row">
+	{% for prompt in prompts %}
+	<div class="col-lg-6 col-md-6 mb-4">
+		<div class="card h-100">
+			<div class="card-header d-flex justify-content-between align-items-center">
+				<h5 class="mb-0">{{ prompt.ia_name }}</h5>
+				<small class="text-muted text-right">
+					Criado: {{ prompt.created_at }}<br />
+					Atualizado: {{ prompt.updated_at }}
+				</small>
+			</div>
+			<div class="card-body">
+				<textarea class="form-control" rows="10" readonly>{{ prompt.text }}</textarea>
+			</div>
+			<div class="card-footer d-flex justify-content-between align-items-center">
+				<span class="badge {% if prompt.status %}badge-success{% else %}badge-secondary{% endif %}"> {% if prompt.status %}Ativo{% else %}Inativo{% endif %} </span>
+				<div>
+					<!-- Botão de Editar -->
+					<button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#editPromptModal{{ prompt.id }}" title="Editar Prompt">
+						<i class="bi bi-pencil-square"></i>
+					</button>
+					<!-- Botão de Deletar -->
+					<button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deletePromptModal{{ prompt.id }}" title="Deletar Prompt">
+						<i class="bi bi-trash"></i>
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal para Editar Prompt -->
+	<div class="modal fade" id="editPromptModal{{ prompt.id }}" tabindex="-1" aria-labelledby="editPromptModalLabel{{ prompt.id }}" aria-hidden="true">
+		<div class="modal-dialog modal-lg modal-dialog-centered">
+			<div class="modal-content">
+				<form action="/edit-prompt/{{ prompt.id }}" method="POST">
+					<div class="modal-header">
+						<h5 class="modal-title" id="editPromptModalLabel{{ prompt.id }}">Editar Prompt - {{ prompt.ia_name }}</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<!-- Textarea para o conteúdo do prompt -->
+						<div class="form-group">
+							<label for="promptText{{ prompt.id }}">Texto do Prompt</label>
+							<textarea class="form-control" id="promptText{{ prompt.id }}" name="text" rows="10" required>{{ prompt.text }}</textarea>
+						</div>
+						<!-- Status com Radio Buttons -->
+						<div class="form-group">
+							<label>Status</label>
+							<div class="form-check">
+								<input class="form-check-input" type="radio" name="status" id="promptStatusTrue{{ prompt.id }}" value="True" {% if prompt.status %}checked{% endif %} />
+								<label class="form-check-label" for="promptStatusTrue{{ prompt.id }}"> Ativo </label>
+							</div>
+							<div class="form-check">
+								<input class="form-check-input" type="radio" name="status" id="promptStatusFalse{{ prompt.id }}" value="False" {% if not prompt.status %}checked{% endif %} />
+								<label class="form-check-label" for="promptStatusFalse{{ prompt.id }}"> Inativo </label>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+						<button type="submit" class="btn btn-primary">Salvar</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal para Deletar Prompt -->
+	<div class="modal fade" id="deletePromptModal{{ prompt.id }}" tabindex="-1" aria-labelledby="deletePromptModalLabel{{ prompt.id }}" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<form action="/delete-prompt/{{ prompt.id }}" method="POST">
+					<div class="modal-header">
+						<h5 class="modal-title" id="deletePromptModalLabel{{ prompt.id }}">Confirmar Exclusão</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<p>Tem certeza que deseja excluir o prompt referente a <strong>{{ prompt.ia_name }}</strong>?</p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+						<button type="submit" class="btn btn-danger">Excluir</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	{% endfor %}
+</div>
+
+<script>
+	// Atualiza a ação do formulário de novo prompt com base no IA selecionado
+	document.getElementById("newPromptForm").addEventListener("submit", function (e) {
+		var iaSelect = document.getElementById("iaSelect");
+		var selectedId = iaSelect.value;
+		// Define a ação para enviar para /new-prompt/<id_ia>
+		this.action = "/new-prompt/" + selectedId;
+	});
+</script>
+{% endblock %}
