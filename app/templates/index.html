@@ -1,224 +1,73 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mt-4 mb-3">
-  <h1>Lista de IAs</h1>
-  <button class="btn btn-success" data-toggle="modal" data-target="#addIAModal">
-    <i class="bi bi-plus-circle"></i> Adicionar
-  </button>
-</div>
-
-<!-- Modal para Adicionar IA -->
-<div class="modal fade" id="addIAModal" tabindex="-1" aria-labelledby="addIAModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <form action="/create-ia" method="POST">
-        <div class="modal-header">
-          <h5 class="modal-title" id="addIAModalLabel">Adicionar Nova IA</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <!-- Nome -->
-          <div class="form-group">
-            <label for="iaName">Nome</label>
-            <input type="text" class="form-control" id="iaName" name="name" required>
-          </div>
-          <!-- Telefone -->
-          <div class="form-group">
-            <label for="iaPhone">Telefone</label>
-            <input type="text" class="form-control" id="iaPhone" name="phone_number" required>
-          </div>
-          <!-- Canal -->
-          <div class="form-group">
-            <label for="iaChannel">Canal</label>
-            <select class="form-control" id="iaChannel" name="channel" required>
-              <option value="Whatsapp">Whatsapp</option>
-            </select>
-          </div>
-          <!-- IA Usada -->
-          <div class="form-group">
-            <label for="iaUsed">IA Usada</label>
-            <select class="form-control" id="iaUsed" name="ia_used" required>
-              <option value="Openai">Openai</option>
-            </select>
-          </div>
-          <!-- API Key -->
-          <div class="form-group">
-            <label for="iaApikey">API Key</label>
-            <input type="text" class="form-control" id="iaApikey" name="apikey" required>
-          </div>
-          <!-- Modelo a ser usado -->
-          <div class="form-group">
-            <label for="iaModel">Modelo a ser usado</label>
-            <input type="text" class="form-control" id="iaModel" name="model" required>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
-          <button type="submit" class="btn btn-primary">Criar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<div class="row">
-  {% for ia in ias %}
-  <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-    <div class="card h-100">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center">
-          <h5 class="card-title mb-0">{{ ia.name }}</h5>
-          <div>
-            <!-- Botão de Editar -->
-            <button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#editIAModal{{ ia.id }}" title="Editar IA">
-              <i class="bi bi-pencil-square"></i>
-            </button>
-            <!-- Botão de Deletar -->
-            <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteIAModal{{ ia.id }}" title="Deletar IA">
-              <i class="bi bi-trash"></i>
-            </button>
-          </div>
-        </div>
-        <p class="card-text mt-2"><strong>Telefone:</strong> {{ ia.phone_number }}</p>
-        <p class="card-text"><strong>Status:</strong>
-          {% if ia.status %}
-            Ativo
-          {% else %}
-            Inativo
-          {% endif %}
-        </p>
-        <div class="container">
-          <button class="btn btn-primary btn-block mb-2" data-toggle="modal" data-target="#promptModal{{ ia.id }}">
-            <i class="bi bi-chat-left-text"></i> Prompt
-          </button>
-          <a href="{{ url_for('get_leads_ia', ia_id=ia.id) }}" class="btn btn-primary btn-block">
-            <i class="bi bi-people"></i> Leads
-          </a>
-        </div>
-      </div>
-    </div>
+<div class="p-4">
+  <div class="flex justify-between items-center mb-4">
+    <h1 class="text-2xl font-bold text-gray-800">Lista de IAs</h1>
+    <button data-modal-target="addIAModal" data-modal-toggle="addIAModal"
+      class="px-4 py-2 bg-green-500 text-white font-medium rounded-lg text-sm hover:bg-green-600 focus:ring-4 focus:ring-green-300">
+      Adicionar
+    </button>
   </div>
 
-  <!-- Modal para Editar IA -->
-  <div class="modal fade" id="editIAModal{{ ia.id }}" tabindex="-1" aria-labelledby="editIAModalLabel{{ ia.id }}" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <form action="/edit-ia/{{ ia.id }}" method="POST">
-          <div class="modal-header">
-            <h5 class="modal-title" id="editIAModalLabel{{ ia.id }}">Editar IA - {{ ia.name }}</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
-              <span aria-hidden="true">&times;</span>
-            </button>
+  <!-- Modal de adicionar IA -->
+  <div id="addIAModal" tabindex="-1" aria-hidden="true"
+    class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+      <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+        <!-- Modal header -->
+        <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+            Adicionar Nova IA
+          </h3>
+          <button type="button" data-modal-hide="addIAModal"
+            class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+            </svg>
+            <span class="sr-only">Fechar modal</span>
+          </button>
+        </div>
+        <!-- Modal body -->
+        <form action="/create-ia" method="POST" class="p-4 md:p-5">
+          <div class="mb-4">
+            <label for="iaName" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nome</label>
+            <input type="text" id="iaName" name="name"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+              required>
           </div>
-          <div class="modal-body">
-            <!-- Nome -->
-            <div class="form-group">
-              <label for="editIaName{{ ia.id }}">Nome</label>
-              <input type="text" class="form-control" id="editIaName{{ ia.id }}" name="name" value="{{ ia.name }}" required>
-            </div>
-            <!-- Telefone -->
-            <div class="form-group">
-              <label for="editIaPhone{{ ia.id }}">Telefone</label>
-              <input type="text" class="form-control" id="editIaPhone{{ ia.id }}" name="phone_number" value="{{ ia.phone_number }}" required>
-            </div>
-            <!-- Canal -->
-            <div class="form-group">
-              <label for="editIaChannel{{ ia.id }}">Canal</label>
-              <select class="form-control" id="editIaChannel{{ ia.id }}" name="channel" required>
-                <option value="Whatsapp" {% if ia.configs and ia.configs[0].channel == "Whatsapp" %}selected{% endif %}>Whatsapp</option>
-              </select>
-            </div>
-            <!-- IA Usada -->
-            <div class="form-group">
-              <label for="editIaUsed{{ ia.id }}">IA Usada</label>
-              <select class="form-control" id="editIaUsed{{ ia.id }}" name="ia_used" required>
-                <option value="Openai" {% if ia.configs and ia.configs[0].ai_api == "Openai" %}selected{% endif %}>Openai</option>
-              </select>
-            </div>
-            <!-- API Key -->
-            <div class="form-group">
-              <label for="editIaApikey{{ ia.id }}">API Key</label>
-              <input type="text" class="form-control" id="editIaApikey{{ ia.id }}" name="apikey" value="{% if ia.configs %}{{ia.configs[0].credentials.api_key}}{% endif %}" required>
-            </div>
-            <!-- Modelo a ser usado -->
-            <div class="form-group">
-              <label for="editIaModel{{ ia.id }}">Modelo a ser usado</label>
-              <input type="text" class="form-control" id="editIaModel{{ ia.id }}" name="model" value="{% if ia.configs %}{{ ia.configs[0].credentials.ai_model }}{% endif %}" required>
-            </div>
-            <!-- Status com Radio Buttons -->
-            <div class="form-group">
-              <label>Status</label>
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="status" id="statusTrue{{ ia.id }}" value="True" {% if ia.status %}checked{% endif %}>
-                <label class="form-check-label" for="statusTrue{{ ia.id }}">
-                  Ativo
-                </label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="status" id="statusFalse{{ ia.id }}" value="False" {% if not ia.status %}checked{% endif %}>
-                <label class="form-check-label" for="statusFalse{{ ia.id }}">
-                  Inativo
-                </label>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
-            <button type="submit" class="btn btn-primary">Atualizar</button>
-          </div>
+          <button type="submit"
+            class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+            Criar
+          </button>
         </form>
       </div>
     </div>
   </div>
 
-  <!-- Modal para Deletar IA -->
-  <div class="modal fade" id="deleteIAModal{{ ia.id }}" tabindex="-1" aria-labelledby="deleteIAModalLabel{{ ia.id }}" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <form action="/delete-ia/{{ ia.id }}" method="POST">
-          <div class="modal-header">
-            <h5 class="modal-title" id="deleteIAModalLabel{{ ia.id }}">Confirmar Exclusão</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <p>Tem certeza que deseja excluir a IA <strong>{{ ia.name }}</strong>?</p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-danger">Excluir</button>
-          </div>
-        </form>
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    {% for ia in ias %}
+    <div class="bg-white border border-gray-200 rounded-lg shadow p-6 hover:shadow-md transition">
+      <h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900">{{ ia.name }}</h5>
+      <p class="mb-3 font-normal text-gray-700"><strong>Telefone:</strong> {{ ia.phone_number }}</p>
+      <p class="mb-3 font-normal text-gray-700"><strong>Status:</strong>
+        <span
+          class="px-2 py-1 text-xs font-medium rounded-full {% if ia.status %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+          {{ 'Ativo' if ia.status else 'Inativo' }}
+        </span>
+      </p>
+      <div class="flex space-x-2">
+        <button data-modal-target="editIAModal{{ ia.id }}" data-modal-toggle="editIAModal{{ ia.id }}"
+          class="px-3 py-2 text-sm font-medium text-white bg-yellow-400 rounded-lg hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300">
+          Editar
+        </button>
+        <button data-modal-target="deleteIAModal{{ ia.id }}" data-modal-toggle="deleteIAModal{{ ia.id }}"
+          class="px-3 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:ring-red-300">
+          Excluir
+        </button>
       </div>
     </div>
+    {% endfor %}
   </div>
-
-  <!-- Modal para exibição do prompt -->
-  <div class="modal fade" id="promptModal{{ ia.id }}" tabindex="-1" aria-labelledby="promptModalLabel{{ ia.id }}" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="promptModalLabel{{ ia.id }}">Prompt Atual - {{ ia.name }}</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          {% for prompt in ia.prompts %}
-          <div class="card-body">
-                    <textarea class="form-control" rows="10" readonly>{{ prompt.text }}</textarea>
-          </div>
-          {% endfor %}
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  {% endfor %}
 </div>
 {% endblock %}

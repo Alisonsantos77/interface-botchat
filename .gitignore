@@ -171,3 +171,5 @@ cython_debug/
 .pypirc
 .png
 *png
+node_modules/
+static/dist/
