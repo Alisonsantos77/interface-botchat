@@ -1,57 +1,159 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 
 <head>
-	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>ChatBot Academy</title>
-	<link rel="stylesheet" href="{{ url_for('static', filename='dist/output.css') }}">
-	<link rel="icon" type="image/png" href="{{ url_for('static', filename='img/chatbotacademylogo.png') }}">
-	<link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.css" rel="stylesheet" />
+	<!-- Flowbite CSS -->
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet" />
+	<!-- Tailwind CSS -->
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script>
+		tailwind.config = {
+			darkMode: 'class',
+			theme: {
+				extend: {
+					colors: {
+						primary: { "50": "#f0f9ff", "100": "#e0f2fe", "200": "#bae6fd", "300": "#7dd3fc", "400": "#38bdf8", "500": "#0ea5e9", "600": "#0284c7", "700": "#0369a1", "800": "#075985", "900": "#0c4a6e", "950": "#082f49" }
+					}
+				},
+				fontFamily: {
+					'body': [
+						'Inter',
+						'ui-sans-serif',
+						'system-ui',
+						'sans-serif'
+					],
+					'sans': [
+						'Inter',
+						'ui-sans-serif',
+						'system-ui',
+						'sans-serif'
+					]
+				}
+			}
+		}
+	</script>
+	<style>
+		.dark .dark\:bg-gray-900 {
+			background-color: #1a1a1a;
+		}
+	</style>
 </head>
 
-<body class="bg-gray-100">
-	<div class="flex h-screen" id="wrapper">
-		<!-- Sidebar -->
-		<aside class="bg-gray-800 text-white w-64 space-y-6 py-7 px-4 hidden sm:block" id="sidebar-wrapper">
-			<div class="flex justify-center">
-				<img src="{{ url_for('static', filename='img/chatbotacademylogo.png') }}" class="w-20 h-20 rounded-full"
-					alt="Logo">
-			</div>
-			<nav>
-				<a href="{{ url_for('index') }}" class="block py-2.5 px-4 rounded transition hover:bg-gray-700">IAs</a>
-				<a href="{{ url_for('get_prompts_ia') }}"
-					class="block py-2.5 px-4 rounded transition hover:bg-gray-700">Prompts</a>
-			</nav>
-		</aside>
+<body class="bg-gray-50 dark:bg-gray-900">
 
-		<!-- Mobile menu button -->
-		<div class="sm:hidden bg-gray-800 text-white p-4 w-full fixed top-0 z-10">
-			<div class="flex justify-between items-center">
-				<img src="{{ url_for('static', filename='img/chatbotacademylogo.png') }}" class="w-10 h-10 rounded-full"
-					alt="Logo">
-				<button data-drawer-target="sidebar-wrapper" data-drawer-toggle="sidebar-wrapper"
-					aria-controls="sidebar-wrapper" type="button"
-					class="inline-flex items-center p-2 ml-3 text-sm text-white rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-200">
-					<span class="sr-only">Abrir menu</span>
-					<svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"
-						xmlns="http://www.w3.org/2000/svg">
-						<path clip-rule="evenodd" fill-rule="evenodd"
-							d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z">
-						</path>
-					</svg>
-				</button>
+	<button data-drawer-target="logo-sidebar" data-drawer-toggle="logo-sidebar" aria-controls="logo-sidebar"
+		type="button"
+		class="inline-flex items-center p-2 mt-2 ml-3 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600">
+		<span class="sr-only">Abrir sidebar</span>
+		<svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"
+			xmlns="http://www.w3.org/2000/svg">
+			<path clip-rule="evenodd" fill-rule="evenodd"
+				d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z">
+			</path>
+		</svg>
+	</button>
+
+	<aside id="logo-sidebar"
+		class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0"
+		aria-label="Sidebar">
+		<div
+			class="h-full px-3 py-4 overflow-y-auto bg-white border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+			<div class="flex items-center justify-center mb-5 mt-3">
+				<img src="{{ url_for('static', filename='img/chatbotacademylogo.png') }}" class="h-16 w-16 rounded-full"
+					alt="ChatBot Academy Logo">
+			</div>
+			<div class="flex justify-center mb-5">
+				<span class="self-center text-xl font-semibold whitespace-nowrap dark:text-white">ChatBot Academy</span>
+			</div>
+			<ul class="space-y-2 font-medium">
+				<li>
+					<a href="{{ url_for('index') }}"
+						class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+						<svg class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+							aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+							viewBox="0 0 22 21">
+							<path
+								d="M16.975 11H10V4.025a1 1 0 0 0-1.066-.998 8.5 8.5 0 1 0 9.039 9.039.999.999 0 0 0-1-1.066h.002Z" />
+							<path
+								d="M12.5 0c-.157 0-.311.01-.565.027A1 1 0 0 0 11 1.02V10h8.975a1 1 0 0 0 1-.935c.013-.188.028-.374.028-.565A8.51 8.51 0 0 0 12.5 0Z" />
+						</svg>
+						<span class="ml-3">IAs</span>
+					</a>
+				</li>
+				<li>
+					<a href="{{ url_for('get_prompts_ia') }}"
+						class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+						<svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+							aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+							viewBox="0 0 20 18">
+							<path
+								d="M18 0H2a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h2v4a1 1 0 0 0 1.707.707L10.414 13H18a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2Zm-5 4h2a1 1 0 1 1 0 2h-2a1 1 0 1 1 0-2ZM5 4h5a1 1 0 1 1 0 2H5a1 1 0 0 1 0-2Zm2 5H5a1 1 0 0 1 0-2h2a1 1 0 0 1 0 2Zm9 0h-6a1 1 0 0 1 0-2h6a1 1 0 1 1 0 2Z" />
+						</svg>
+						<span class="flex-1 ml-3 whitespace-nowrap">Prompts</span>
+					</a>
+				</li>
+			</ul>
+			<div class="pt-5 mt-auto border-t border-gray-200 dark:border-gray-700">
+				<div class="flex items-center justify-center">
+					<button id="theme-toggle" type="button"
+						class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5">
+						<svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+							xmlns="http://www.w3.org/2000/svg">
+							<path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+						</svg>
+						<svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+							xmlns="http://www.w3.org/2000/svg">
+							<path
+								d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+								fill-rule="evenodd" clip-rule="evenodd"></path>
+						</svg>
+					</button>
+				</div>
 			</div>
 		</div>
+	</aside>
 
-		<!-- Page Content -->
-		<main class="flex-1 overflow-y-auto sm:pt-0 pt-16" id="page-content-wrapper">
-			<div class="container mx-auto p-4">{% block content %}{% endblock %}</div>
-		</main>
+	<div class="p-4 sm:ml-64">
+		<div class="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 mt-14">
+			{% block content %}{% endblock %}
+		</div>
 	</div>
 
 	<!-- Flowbite JS -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.js"></script>
+	<script>
+		// Check for dark mode preference
+		if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+			document.documentElement.classList.add('dark');
+			document.getElementById('theme-toggle-light-icon').classList.remove('hidden');
+		} else {
+			document.documentElement.classList.remove('dark');
+			document.getElementById('theme-toggle-dark-icon').classList.remove('hidden');
+		}
+
+		// Toggle dark mode
+		const themeToggleBtn = document.getElementById('theme-toggle');
+		const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+		const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+		themeToggleBtn.addEventListener('click', function () {
+			// Toggle icons
+			themeToggleDarkIcon.classList.toggle('hidden');
+			themeToggleLightIcon.classList.toggle('hidden');
+
+			// Toggle dark mode class
+			if (document.documentElement.classList.contains('dark')) {
+				document.documentElement.classList.remove('dark');
+				localStorage.setItem('color-theme', 'light');
+			} else {
+				document.documentElement.classList.add('dark');
+				localStorage.setItem('color-theme', 'dark');
+			}
+		});
+	</script>
 </body>
 
 </html>
