@@ -1,358 +1,48 @@
 {% extends "base.html" %}
+{% block title %}IAs Cadastradas{% endblock %}
 {% block content %}
-<div class="p-4 sm:ml-4">
-  <div class="flex flex-col sm:flex-row justify-between items-center mt-4 mb-6">
-    <h1 class="text-2xl font-bold text-gray-800 mb-4 sm:mb-0">Lista de IAs</h1>
-    <button data-modal-target="addIAModal" data-modal-toggle="addIAModal"
-      class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none">
-      <svg class="w-4 h-4 mr-2 inline-block" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-        <path fill-rule="evenodd"
-          d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd">
-        </path>
-      </svg>
-      Adicionar
-    </button>
-  </div>
-
-  <!-- Modal para Adicionar IA -->
-  <div id="addIAModal" tabindex="-1" aria-hidden="true"
-    class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
-    <div class="relative w-full max-w-md max-h-full">
-      <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-        <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-            Adicionar Nova IA
-          </h3>
-          <button type="button"
-            class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-            data-modal-hide="addIAModal">
-            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-            </svg>
-            <span class="sr-only">Fechar</span>
-          </button>
-        </div>
-        <form action="/create-ia" method="POST" class="p-4 md:p-5 space-y-4">
-          <!-- Nome -->
-          <div>
-            <label for="iaName" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nome</label>
-            <input type="text" id="iaName" name="name"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-              required>
-          </div>
-          <!-- Telefone -->
-          <div>
-            <label for="iaPhone" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Telefone</label>
-            <input type="text" id="iaPhone" name="phone_number"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-              required>
-          </div>
-          <!-- Canal -->
-          <div>
-            <label for="iaChannel" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Canal</label>
-            <select id="iaChannel" name="channel"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-              required>
-              <option value="Whatsapp">Whatsapp</option>
-            </select>
-          </div>
-          <!-- IA Usada -->
-          <div>
-            <label for="iaUsed" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">IA Usada</label>
-            <select id="iaUsed" name="ia_used"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-              required>
-              <option value="Openai">Openai</option>
-            </select>
-          </div>
-          <!-- API Key -->
-          <div>
-            <label for="iaApikey" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">API Key</label>
-            <input type="text" id="iaApikey" name="apikey"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-              required>
-          </div>
-          <!-- Modelo a ser usado -->
-          <div>
-            <label for="iaModel" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Modelo a ser
-              usado</label>
-            <input type="text" id="iaModel" name="model"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-              required>
-          </div>
-          <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
-            <button type="submit"
-              class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Criar</button>
-            <button data-modal-hide="addIAModal" type="button"
-              class="ms-3 text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">Fechar</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-    {% for ia in ias %}
-    <div
-      class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 dark:bg-gray-800 dark:border-gray-700">
-      <div class="p-4">
-        <div class="flex justify-between items-start mb-3">
-          <h5 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">{{ ia.name }}</h5>
-          <div class="flex space-x-2">
-            <!-- Botão de Editar -->
-            <button data-modal-target="editIAModal{{ ia.id }}" data-modal-toggle="editIAModal{{ ia.id }}"
-              class="text-yellow-400 bg-yellow-100 hover:bg-yellow-200 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-medium rounded-lg text-sm p-2 text-center inline-flex items-center dark:bg-yellow-800 dark:text-yellow-300 dark:hover:bg-yellow-700"
-              title="Editar IA">
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z">
-                </path>
-              </svg>
-              <span class="sr-only">Editar</span>
-            </button>
-            <!-- Botão de Deletar -->
-            <button data-modal-target="deleteIAModal{{ ia.id }}" data-modal-toggle="deleteIAModal{{ ia.id }}"
-              class="text-red-600 bg-red-100 hover:bg-red-200 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm p-2 text-center inline-flex items-center dark:bg-red-800 dark:text-red-300 dark:hover:bg-red-700"
-              title="Deletar IA">
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                <path fill-rule="evenodd"
-                  d="M9 2a1abnsp;H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                  clip-rule="evenodd"></path>
-              </svg>
-              <span class="sr-only">Deletar</span>
-            </button>
-          </div>
-        </div>
-        <div class="mb-3 text-sm text-gray-700 dark:text-gray-300">
-          <p class="flex items-center mb-1">
-            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z">
-              </path>
-            </svg>
-            {{ ia.phone_number }}
-          </p>
-          <p class="flex items-center">
-            <svg class="w-4 h-4 mr-2" fill="currentColor Grouping users by age range in Python viewBox=" 0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg">
-              <path fill-rule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                clip-rule="evenodd"></path>
-            </svg>
-            Status:
-            {% if ia.status %}
-            <span class="text-green-600 dark:text-green-400 font-medium">Ativo</span>
-            {% else %}
-            <span class="text-gray-500 dark:text-gray-400 font-medium">Inativo</span>
-            {% endif %}
-          </p>
-        </div>
-        <div class="flex flex-col space-y-2">
-          <button data-modal-target="promptModal{{ ia.id }}" data-modal-toggle="promptModal{{ ia.id }}"
-            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-            <svg class="w-4 h-4 mr-2 inline-block" fill="currentColor" viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg">
-              <path fill-rule="evenodd"
-                d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z"
-                clip-rule="evenodd"></path>
-            </svg>
-            Prompt
-          </button>
-          <a href="{{ url_for('get_leads_ia', ia_id=ia.id) }}"
-            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-            <svg class="w-4 h-4 mr-2 inline-block" fill="currentColor" viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z">
-              </path>
-            </svg>
-            Leads
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal para Editar IA -->
-    <div id="editIAModal{{ ia.id }}" tabindex="-1" aria-hidden="true"
-      class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
-      <div class="relative w-full max-w-md max-h-full">
-        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-          <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-              Editar IA - {{ ia.name }}
-            </h3>
-            <button type="button"
-              class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-              data-modal-hide="editIAModal{{ ia.id }}">
-              <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                viewBox="0 0 14 14">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-              </svg>
-              <span class="sr-only">Fechar</span>
-            </button>
-          </div>
-          <form action="/edit-ia/{{ ia.id }}" method="POST" class="p-4 md:p-5 space-y-4">
-            <!-- Nome -->
-            <div>
-              <label for="editIaName{{ ia.id }}"
-                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nome</label>
-              <input type="text" id="editIaName{{ ia.id }}" name="name" value="{{ ia.name }}"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                required>
-            </div>
-            <!-- Telefone -->
-            <div>
-              <label for="editIaPhone{{ ia.id }}"
-                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Telefone</label>
-              <input type="text" id="editIaPhone{{ ia.id }}" name="phone_number" value="{{ ia.phone_number }}"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                required>
-            </div>
-            <!-- Canal -->
-            <div>
-              <label for="editIaChannel{{ ia.id }}"
-                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Canal</label>
-              <select id="editIaChannel{{ ia.id }}" name="channel"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                required>
-                <option value="Whatsapp" {% if ia.configs and ia.configs[0].channel=="Whatsapp" %}selected{% endif %}>
-                  Whatsapp</option>
-              </select>
-            </div>
-            <!-- IA Usada -->
-            <div>
-              <label for="editIaUsed{{ ia.id }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">IA
-                Usada</label>
-              <select id="editIaUsed{{ ia.id }}" name="ia_used"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                required>
-                <option value="Openai" {% if ia.configs and ia.configs[0].ai_api=="Openai" %}selected{% endif %}>Openai
-                </option>
-              </select>
-            </div>
-            <!-- API Key -->
-            <div>
-              <label for="editIaApikey{{ ia.id }}"
-                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">API Key</label>
-              <input type="text" id="editIaApikey{{ ia.id }}" name="apikey"
-                value="{% if ia.configs %}{{ia.configs[0].credentials.api_key}}{% endif %}"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                required>
-            </div>
-            <!-- Modelo a ser usado -->
-            <div>
-              <label for="editIaModel{{ ia.id }}"
-                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Modelo a ser usado</label>
-              <input type="text" id="editIaModel{{ ia.id }}" name="model"
-                value="{% if ia.configs %}{{ ia.configs[0].credentials.ai_model }}{% endif %}"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                required>
-            </div>
-            <!-- Status com Radio Buttons -->
-            <div>
-              <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Status</label>
-              <div class="flex items-center mb-4">
-                <input id="statusTrue{{ ia.id }}" type="radio" name="status" value="True" {% if ia.status %}checked{%
-                  endif %}
-                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                <label for="statusTrue{{ ia.id }}"
-                  class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Ativo</label>
-              </div>
-              <div class="flex items-center">
-                <input id="statusFalse{{ ia.id }}" type="radio" name="status" value="False" {% if not ia.status
-                  %}checked{% endif %}
-                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                <label for="statusFalse{{ ia.id }}"
-                  class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Inativo</label>
-              </div>
-            </div>
-            <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
-              <button type="submit"
-                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Atualizar</button>
-              <button data-modal-hide="editIAModal{{ ia.id }}" type="button"
-                class="ms-3 text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">Fechar</button>
-            </div>
+<div class="flex justify-between items-center mb-6">
+  <h2 class="text-xl font-bold">IAs Cadastradas</h2>
+  <a href="{{ url_for('create_ia') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Nova IA</a>
+</div>
+<div class="overflow-x-auto bg-white rounded shadow">
+  <table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Nome</th>
+        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Telefone</th>
+        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Status</th>
+        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">API</th>
+        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Prompt Ativo</th>
+        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Ações</th>
+      </tr>
+    </thead>
+    <tbody class="bg-white divide-y divide-gray-200">
+      {% for ia in ias %}
+      <tr>
+        <td class="px-4 py-2">{{ ia.name }}</td>
+        <td class="px-4 py-2">{{ ia.phone_number }}</td>
+        <td class="px-4 py-2">
+          {% if ia.status %}
+          <span class="px-2 py-1 rounded bg-green-100 text-green-700 text-xs">Ativo</span>
+          {% else %}
+          <span class="px-2 py-1 rounded bg-gray-200 text-gray-700 text-xs">Inativo</span>
+          {% endif %}
+        </td>
+        <td class="px-4 py-2">{{ ia.configs[0].ai_api if ia.configs else '' }}</td>
+        <td class="px-4 py-2">{{ ia.prompts[0].text[:40] ~ ('...' if ia.prompts[0].text|length > 40 else '') if
+          ia.prompts else 'Nenhum' }}</td>
+        <td class="px-4 py-2 flex gap-2">
+          <a href="{{ url_for('edit_ia', id_ia=ia.id) }}" class="text-blue-600 hover:underline">Editar</a>
+          <form action="{{ url_for('delete_ia', id_ia=ia.id) }}" method="post"
+            onsubmit="return confirm('Excluir esta IA?');">
+            <button type="submit" class="text-red-600 hover:underline">Excluir</button>
           </form>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal para Deletar IA -->
-    <div id="deleteIAModal{{ ia.id }}" tabindex="-1" aria-hidden="true"
-      class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
-      <div class="relative w-full max-w-md max-h-full">
-        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-          <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-              Confirmar Exclusão
-            </h3>
-            <button type="button"
-              class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-              data-modal-hide="deleteIAModal{{ ia.id }}">
-              <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                viewBox="0 0 14 14">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-              </svg>
-              <span class="sr-only">Fechar</span>
-            </button>
-          </div>
-          <form action="/delete-ia/{{ ia.id }}" method="POST">
-            <div class="p-4 md:p-5 space-y-4">
-              <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
-                Tem certeza que deseja excluir a IA <strong>{{ ia.name }}</strong>?
-              </p>
-            </div>
-            <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
-              <button type="submit"
-                class="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800">Excluir</button>
-              <button data-modal-hide="deleteIAModal{{ ia.id }}" type="button"
-                class="ms-3 text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">Cancelar</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal para exibição do prompt -->
-    <div id="promptModal{{ ia.id }}" tabindex="-1" aria-hidden="true"
-      class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
-      <div class="relative w-full max-w-4xl max-h-full">
-        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-          <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-              Prompt Atual - {{ ia.name }}
-            </h3>
-            <button type="button"
-              class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-              data-modal-hide="promptModal{{ ia.id }}">
-              <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                viewBox="0 0 14 14">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-              </svg>
-              <span class="sr-only">Fechar</span>
-            </button>
-          </div>
-          <div class="p-4 md:p-5 space-y-4">
-            {% for prompt in ia.prompts %}
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 dark:bg-gray-800 dark:border-gray-600">
-              <textarea
-                class="w-full bg-transparent text-gray-900 dark:text-white text-sm focus:outline-none resize-none"
-                rows="10" readonly>{{ prompt.text }}</textarea>
-            </div>
-            {% endfor %}
-          </div>
-          <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
-            <button data-modal-hide="promptModal{{ ia.id }}" type="button"
-              class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">Fechar</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
+          <a href="{{ url_for('get_leads_ia', ia_id=ia.id) }}" class="text-gray-600 hover:underline">Leads</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 {% endblock %}
