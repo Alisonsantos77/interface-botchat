@@ -1,7 +1,7 @@
 import os
 import json
 from cryptography.fernet import Fernet
-
+from loguru import logger
 # Obtenha a chave de criptografia via variável de ambiente ou gere uma nova (atenção: a geração de chave em runtime não é ideal para produção)
 FERNET_KEY = os.getenv("FERNET_KEY", Fernet.generate_key().decode())
 
@@ -21,5 +21,5 @@ def decrypt_data(encrypted_data: str) -> dict:
     """
     decrypted_bytes = fernet.decrypt(encrypted_data.encode())
     data = json.loads(decrypted_bytes.decode())
-    print(data)
+    logger.info(data)
     return data
