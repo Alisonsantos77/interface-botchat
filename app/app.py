@@ -279,7 +279,17 @@ def delete_lead(id_lead):
 
 @app.route("/get-leads-ia/<int:ia_id>", methods=["GET"])
 def get_leads_ia(ia_id):
-    leads = Lead.query.filter_by(ia_id=ia_id).all()
+    search_query = request.args.get("search_query", "").strip()
+    leads = Lead.query.filter_by(ia_id=ia_id)
+
+    # Aplicar filtro de busca se houver query
+    if search_query:
+        leads = leads.filter(
+            (Lead.name.ilike(f"%{search_query}%"))
+            | (Lead.phone.ilike(f"%{search_query}%"))
+        )
+
+    leads = leads.all()
     leads_list = []
     lead_id = int(request.args.get("lead_id", 0))
     selected_lead = {}
@@ -293,7 +303,7 @@ def get_leads_ia(ia_id):
             "message": lead.message,
             "resume": lead.resume,
             "created_at": lead.created_at.strftime("%d-%m-%Y %H:%M:%S"),
-            "updated_at": lead.updated_at.strftime("%d-%m-%Y %H:%M:%S"),
+            "updated_at": lead.updated_at,
         }
         if lead_id == lead.id:
             selected_lead = lead_dict
@@ -301,7 +311,12 @@ def get_leads_ia(ia_id):
     logger.info(
         f"[LEADS] Listando leads para IA {ia_id}: {[{'id': l['id'], 'name': l['name']} for l in leads_list]}"
     )
-    return render_template("lead.html", leads=leads_list, selected_lead=selected_lead)
+    return render_template(
+        "lead.html",
+        leads=leads_list,
+        selected_lead=selected_lead,
+        search_query=search_query,
+    )
 
 
 @app.route("/get-infos-lead/<int:ia_lead>", methods=["GET"])
