@@ -92,11 +92,12 @@
             <div class="flex justify-end space-x-2 p-4 border-t dark:border-gray-600">
               <button type="button" data-modal-hide="confirm-delete-ia-{{ ia.id }}"
                 class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:text-white">Cancelar</button>
-              <button type="button" onclick="window.location.href=this.dataset.deleteUrl"
-                class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
-                data-delete-url="{{ url_for('delete_ia', id_ia=ia.id) }}">
-                Excluir
-              </button>
+              <form action="{{ url_for('delete_ia', id_ia=ia.id) }}" method="POST">
+                <button type="submit"
+                  class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600">
+                  Excluir
+                </button>
+              </form>
             </div>
           </div>
         </div>

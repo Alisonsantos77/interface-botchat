@@ -24,7 +24,21 @@ def inject_now():
 
 @app.route("/")
 def index():
-    ias = IA.query.all()
+    items_per_page = 6  # numero por pagina
+    current_page = request.args.get("page", 1, type=int)
+    
+    # Contar total de IAs
+    total_ias = IA.query.count()
+    
+    # Calcular total de páginas
+    total_pages = (total_ias + items_per_page - 1) // items_per_page
+    
+    # Garantir que current_page seja válido
+    current_page = max(1, min(current_page, total_pages))
+    
+    # Consultar IAs para a página atual
+    ias = IA.query.offset((current_page - 1) * items_per_page).limit(items_per_page).all()
+    
     ia_list = []
     for ia in ias:
         config_data = []
@@ -60,15 +74,17 @@ def index():
             ),
         }
         ia_list.append(ia_info)
+    
     logger.info(
         f"[INDEX] IA list montada: {[{'id': i['id'], 'name': i['name'], 'ai_api': i['configs'][0]['ai_api'] if i['configs'] else None} for i in ia_list]}"
     )
-    total_pages = 10  # ou calcule dinamicamente
-    current_page = request.args.get("page", 1, type=int)
+    
     return render_template(
-    "index.html", ias=ia_list, current_page=current_page, total_pages=total_pages
-)
-
+        "index.html",
+        ias=ia_list,
+        current_page=current_page,
+        total_pages=total_pages
+    )
 
 @app.route("/create-ia", methods=["GET", "POST"])
 def create_ia():
@@ -207,22 +223,30 @@ def new_prompt(id_ia):
         try:
             new_prompt_text = request.form.get("text")
             status = request.form.get("status")
+            ia_id = request.form.get("ia_id")
             logger.info(
-                f"[NEW-PROMPT] Criando prompt para IA {id_ia}: texto={new_prompt_text}, status={status}"
+                f"[NEW-PROMPT] Criando prompt para IA {ia_id}: texto={new_prompt_text}, status={status}"
             )
+            # Validar se a IA existe
+            ia = IA.query.filter_by(id=ia_id).first()
+            if not ia:
+                logger.error(f"[NEW-PROMPT] IA id {ia_id} não encontrada")
+                return redirect(url_for("get_prompts_ia"))
             new_prompt = Prompt(
                 prompt_text=new_prompt_text,
                 is_active=True if status == "True" else False,
-                ia_id=id_ia,
+                ia_id=ia_id,
             )
             db.session.add(new_prompt)
             db.session.commit()
-            logger.success(f"[NEW-PROMPT] Prompt criado para IA {id_ia}")
+            logger.success(f"[NEW-PROMPT] Prompt criado para IA {ia_id}")
         except Exception as ex:
             logger.error(f"[NEW-PROMPT] Erro ao criar prompt: {ex}")
         return redirect(url_for("get_prompts_ia"))
+    # Para GET, passar a lista de IAs e o id_ia como padrão
+    ias = IA.query.all()
     logger.info(f"[NEW-PROMPT] Exibindo formulário de novo prompt para IA {id_ia}")
-    return render_template("prompt_form.html", action="Criar", ia_id=id_ia)
+    return render_template("prompt_form.html", action="Criar", ia_id=id_ia, ias=ias)
 
 
 @app.route("/edit-prompt/<int:id_prompt>", methods=["GET", "POST"])
@@ -285,16 +309,33 @@ def delete_lead(id_lead):
 @app.route("/get-leads-ia/<int:ia_id>", methods=["GET"])
 def get_leads_ia(ia_id):
     search_query = request.args.get("search_query", "").strip()
-    leads = Lead.query.filter_by(ia_id=ia_id)
+    items_per_page = 6  # numero por pagina
+    current_page = request.args.get("page", 1, type=int)
 
-    # Aplicar filtro de busca se houver query
+    # Consultar leads com filtro de busca
+    leads_query = Lead.query.filter_by(ia_id=ia_id)
     if search_query:
-        leads = leads.filter(
+        leads_query = leads_query.filter(
             (Lead.name.ilike(f"%{search_query}%"))
             | (Lead.phone.ilike(f"%{search_query}%"))
         )
 
-    leads = leads.all()
+    # Contar total de leads
+    total_leads = leads_query.count()
+
+    # Calcular total de páginas
+    total_pages = (total_leads + items_per_page - 1) // items_per_page
+
+    # Garantir que current_page seja válido
+    current_page = max(1, min(current_page, total_pages))
+
+    # Consultar leads para a página atual
+    leads = (
+        leads_query.offset((current_page - 1) * items_per_page)
+        .limit(items_per_page)
+        .all()
+    )
+
     leads_list = []
     lead_id = int(request.args.get("lead_id", 0))
     selected_lead = {}
@@ -313,14 +354,18 @@ def get_leads_ia(ia_id):
         if lead_id == lead.id:
             selected_lead = lead_dict
         leads_list.append(lead_dict)
+
     logger.info(
         f"[LEADS] Listando leads para IA {ia_id}: {[{'id': l['id'], 'name': l['name']} for l in leads_list]}"
     )
+
     return render_template(
         "lead.html",
         leads=leads_list,
         selected_lead=selected_lead,
         search_query=search_query,
+        current_page=current_page,
+        total_pages=total_pages,
     )
 
 
