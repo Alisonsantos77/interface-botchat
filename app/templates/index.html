@@ -1,48 +1,140 @@
 {% extends "base.html" %}
 {% block title %}IAs Cadastradas{% endblock %}
 {% block content %}
-<div class="flex justify-between items-center mb-6">
-  <h2 class="text-xl font-bold">IAs Cadastradas</h2>
-  <a href="{{ url_for('create_ia') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Nova IA</a>
-</div>
-<div class="overflow-x-auto bg-white rounded shadow">
-  <table class="min-w-full divide-y divide-gray-200">
-    <thead class="bg-gray-50">
-      <tr>
-        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Nome</th>
-        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Telefone</th>
-        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Status</th>
-        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">API</th>
-        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Prompt Ativo</th>
-        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Ações</th>
-      </tr>
-    </thead>
-    <tbody class="bg-white divide-y divide-gray-200">
-      {% for ia in ias %}
-      <tr>
-        <td class="px-4 py-2">{{ ia.name }}</td>
-        <td class="px-4 py-2">{{ ia.phone_number }}</td>
-        <td class="px-4 py-2">
-          {% if ia.status %}
-          <span class="px-2 py-1 rounded bg-green-100 text-green-700 text-xs">Ativo</span>
-          {% else %}
-          <span class="px-2 py-1 rounded bg-gray-200 text-gray-700 text-xs">Inativo</span>
-          {% endif %}
-        </td>
-        <td class="px-4 py-2">{{ ia.configs[0].ai_api if ia.configs else '' }}</td>
-        <td class="px-4 py-2">{{ ia.prompts[0].text[:40] ~ ('...' if ia.prompts[0].text|length > 40 else '') if
-          ia.prompts else 'Nenhum' }}</td>
-        <td class="px-4 py-2 flex gap-2">
-          <a href="{{ url_for('edit_ia', id_ia=ia.id) }}" class="text-blue-600 hover:underline">Editar</a>
-          <form action="{{ url_for('delete_ia', id_ia=ia.id) }}" method="post"
-            onsubmit="return confirm('Excluir esta IA?');">
-            <button type="submit" class="text-red-600 hover:underline">Excluir</button>
-          </form>
-          <a href="{{ url_for('get_leads_ia', ia_id=ia.id) }}" class="text-gray-600 hover:underline">Leads</a>
-        </td>
-      </tr>
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-xl font-bold text-gray-900 dark:text-white">IAs Cadastradas</h2>
+    <a href="/create-ia" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+      Nova IA
+    </a>
+  </div>
+  <div class="overflow-x-auto">
+    <table id="ias-table" class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+      <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+        <tr>
+          <th class="px-6 py-3">Nome</th>
+          <th class="px-6 py-3">Telefone</th>
+          <th class="px-6 py-3">Status</th>
+          <th class="px-6 py-3">API</th>
+          <th class="px-6 py-3">Prompt Ativo</th>
+          <th class="px-6 py-3">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ia in ias %}
+        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+          <td class="px-6 py-4">{{ ia.name }}</td>
+          <td class="px-6 py-4">{{ ia.phone_number }}</td>
+          <td class="px-6 py-4">
+            <span
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if ia.status %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200{% else %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200{% endif %}">
+              {{ 'Ativo' if ia.status else 'Inativo' }}
+            </span>
+          </td>
+          <td class="px-6 py-4">{{ ia.configs[0].ai_api if ia.configs else '' }}</td>
+          <td class="px-6 py-4">
+            {{ ia.prompts[0].text[:40] ~ ('...' if ia.prompts[0].text|length > 40 else '') if ia.prompts else 'Nenhum'
+            }}
+          </td>
+          <td class="px-6 py-4 flex gap-2">
+            <a href="/get-leads-ia/{{ ia.id }}"
+              class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 006 0zm6 0c0 5.523-4.477 10-10 10S1 17.523 1 12 5.477 2 11 2s10 4.477 10 10z">
+                </path>
+              </svg>
+              Leads
+            </a>
+            <a href="/edit-ia/{{ ia.id }}"
+              class="inline-flex items-center px-3 py-1 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700">
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                </path>
+              </svg>
+              Editar
+            </a>
+            <button type="button" data-modal-target="confirm-delete-ia-{{ ia.id }}"
+              data-modal-toggle="confirm-delete-ia-{{ ia.id }}"
+              data-delete-url="{{ url_for('delete_ia', id_ia=ia.id) }}"
+              class="inline-flex items-center px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700">
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-4 4v12m4-12v12"></path>
+              </svg>
+              Excluir
+            </button>
+          </td>
+        </tr>
+        <!-- Modal para exclusão -->
+        <div id="confirm-delete-ia-{{ ia.id }}" tabindex="-1" aria-hidden="true"
+          class="fixed inset-0 z-50 hidden items-center justify-center p-4 overflow-y-auto">
+          <div class="relative w-full max-w-md bg-white rounded-lg shadow-lg dark:bg-gray-700">
+            <div class="flex justify-between items-center p-4 border-b dark:border-gray-600">
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white">Confirmar exclusão</h3>
+              <button type="button" data-modal-hide="confirm-delete-ia-{{ ia.id }}"
+                class="text-gray-400 hover:text-gray-600 dark:hover:text-white">
+                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                  viewBox="0 0 14 14">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                </svg>
+                <span class="sr-only">Fechar modal</span>
+              </button>
+            </div>
+            <div class="p-4">
+              <p class="text-gray-500 dark:text-gray-400">Tem certeza que deseja excluir esta IA?</p>
+            </div>
+            <div class="flex justify-end space-x-2 p-4 border-t dark:border-gray-600">
+              <button type="button" data-modal-hide="confirm-delete-ia-{{ ia.id }}"
+                class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:text-white">Cancelar</button>
+              <button type="button" onclick="window.location.href=this.dataset.deleteUrl"
+                class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+                data-delete-url="{{ url_for('delete_ia', id_ia=ia.id) }}">
+                Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <!-- Paginação -->
+  {% if total_pages and total_pages > 1 %}
+  <nav class="flex justify-center mt-6" aria-label="Page navigation">
+    <ul class="inline-flex -space-x-px text-sm">
+      <li>
+        <a href="?page={{ current_page-1 if current_page > 1 else 1 }}"
+          class="flex items-center justify-center px-3 h-8 border border-gray-300 rounded-l-lg hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 {% if current_page == 1 %}pointer-events-none opacity-50{% endif %}">Anterior</a>
+      </li>
+      {% for page in range(1, total_pages + 1) %}
+      <li>
+        <a href="?page={{ page }}"
+          class="flex items-center justify-center px-3 h-8 border border-gray-300 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 {% if page == current_page %}bg-blue-50 text-blue-600 dark:bg-gray-700 dark:text-white{% endif %}">{{
+          page }}</a>
+      </li>
       {% endfor %}
-    </tbody>
-  </table>
+      <li>
+        <a href="?page={{ current_page+1 if current_page < total_pages else total_pages }}"
+          class="flex items-center justify-center px-3 h-8 border border-gray-300 rounded-r-lg hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 {% if current_page == total_pages %}pointer-events-none opacity-50{% endif %}">Próximo</a>
+      </li>
+    </ul>
+  </nav>
+  {% endif %}
 </div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    if (window.DataTable) {
+      new DataTable('#ias-table', {
+        searchable: true,
+        sortable: true
+      });
+    }
+  });
+</script>
 {% endblock %}

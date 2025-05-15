@@ -5,6 +5,7 @@ from models import db, IA, Prompt, IAConfig, Lead
 from crypto import encrypt_data
 from loguru import logger
 from datetime import datetime
+from flask import request
 
 load_dotenv()
 
@@ -62,7 +63,11 @@ def index():
     logger.info(
         f"[INDEX] IA list montada: {[{'id': i['id'], 'name': i['name'], 'ai_api': i['configs'][0]['ai_api'] if i['configs'] else None} for i in ia_list]}"
     )
-    return render_template("index.html", ias=ia_list)
+    total_pages = 10  # ou calcule dinamicamente
+    current_page = request.args.get("page", 1, type=int)
+    return render_template(
+    "index.html", ias=ia_list, current_page=current_page, total_pages=total_pages
+)
 
 
 @app.route("/create-ia", methods=["GET", "POST"])
