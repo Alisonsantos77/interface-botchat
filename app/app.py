@@ -259,11 +259,13 @@ def edit_prompt(id_prompt):
         try:
             new_prompt = request.form.get("text")
             status = request.form.get("status")
+            ia_id = request.form.get("ia_id")  # Captura o ia_id do formulário
             logger.info(
-                f"[EDIT-PROMPT] Editando prompt id {id_prompt}: texto={new_prompt}, status={status}"
+                f"[EDIT-PROMPT] Editando prompt id {id_prompt}: texto={new_prompt}, status={status}, ia_id={ia_id}"
             )
             prompt.prompt_text = new_prompt
             prompt.is_active = True if status == "True" else False
+            prompt.ia_id = ia_id  # Atualiza o ia_id
             db.session.commit()
             logger.success(f"[EDIT-PROMPT] Prompt editado id {id_prompt}")
         except Exception as ex:
@@ -272,7 +274,11 @@ def edit_prompt(id_prompt):
     logger.info(
         f"[EDIT-PROMPT] Exibindo formulário de edição para prompt id {id_prompt}"
     )
-    return render_template("prompt_form.html", action="Editar", prompt=prompt)
+    ias = IA.query.all()  # Carrega todas as IAs
+    return render_template(
+        "prompt_form.html", action="Editar", prompt=prompt, ias=ias, ia_id=prompt.ia_id
+    )
+
 
 
 @app.route("/delete-prompt/<int:id_prompt>", methods=["POST"])
