@@ -26,7 +26,7 @@
 			<ul class="overflow-y-auto flex-1 divide-y divide-gray-200 dark:divide-gray-700">
 				{% for lead in leads %}
 				<li>
-					<a href="?lead_id={{ lead.id }}{% if search_query %}&search_query={{ search_query }}{% endif %}"
+					<a href="?lead_id={{ lead.id }}&page={{ current_page }}{% if search_query %}&search_query={{ search_query }}{% endif %}"
 						class="flex items-center gap-4 p-4 hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors {% if selected_lead and lead.id == selected_lead.id %}bg-blue-100 dark:bg-blue-900{% endif %}">
 						<img class="w-10 h-10 rounded-full border"
 							src="https://api.dicebear.com/9.x/notionists/svg?seed={{ lead.name|urlencode }}"
@@ -120,8 +120,8 @@
 							class="text-gray-400 hover:text-gray-600 dark:hover:text-white">
 							<svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
 								viewBox="0 0 14 14">
-								<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-									d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+								<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+									stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
 							</svg>
 							<span class="sr-only">Fechar modal</span>
 						</button>
@@ -140,7 +140,7 @@
 						</form>
 					</div>
 				</div>
-				</div>			<!-- Chat Messages -->
+			</div> <!-- Chat Messages -->
 			<div class="flex-1 overflow-y-auto p-6 space-y-6 bg-white dark:bg-gray-900">
 				{% if selected_lead.message %}
 				{% for msg in selected_lead.message %}
