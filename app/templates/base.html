@@ -1,210 +1,296 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="pt-br">
 
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>{% block title %}{% endblock %}</title>
-	<link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
-	<script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+	<!-- Flowbite CSS -->
+	<link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet">
+	<!-- Tailwind CSS -->
 	<script src="https://cdn.tailwindcss.com"></script>
+	<script>
+		// Configuração do Tailwind para suportar dark mode
+		tailwind.config = {
+			darkMode: 'class',
+			theme: {
+				extend: {}
+			}
+		}
+
+		// Inicializar tema antes do carregamento da página
+		if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+			document.documentElement.classList.add('dark');
+		} else {
+			document.documentElement.classList.remove('dark')
+		}
+	</script>
+	<style>
+		/* Estilo para transição suave do sidebar */
+		#sidebar {
+			transition: transform 0.3s ease-in-out;
+		}
+
+		@media (max-width: 768px) {
+			#sidebar {
+				transform: translateX(-100%);
+			}
+
+			#sidebar.open {
+				transform: translateX(0);
+			}
+		}
+
+		/* Estilo para mensagens flash */
+		.flash-message {
+			transition: opacity 0.5s ease-out;
+		}
+
+		/* Estilo ativo do sidebar */
+		.sidebar-active {
+			background-color: rgb(59 130 246 / 0.1);
+			border-right: 3px solid rgb(59 130 246);
+			color: rgb(59 130 246);
+		}
+
+		.dark .sidebar-active {
+			background-color: rgb(59 130 246 / 0.2);
+			color: rgb(147 197 253);
+		}
+	</style>
 </head>
 
-<body class="h-full bg-gray-100 dark:bg-gray-900">
-	<!-- Navbar -->
-	<nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-		<div class="max-w-screen-xl flex items-center justify-between mx-auto p-4">
-			<a href="/" class="flex items-center space-x-3">
-				<img class="w-10 h-10 p-1 rounded-full ring-2 ring-green-300 dark:ring-green-500"
-					src="/static/img/chatbotacademylogo.png" alt="Aldev Chatbot Logo">
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+	<div class="flex min-h-screen">
+		<!-- Sidebar -->
+		<div id="sidebar"
+			class="fixed md:static inset-y-0 left-0 w-64 bg-white dark:bg-gray-800 shadow-lg border-r border-gray-200 dark:border-gray-700 z-50 md:transform-none">
+			<div class="p-6 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
+				<h1 class="text-2xl font-bold text-gray-900 dark:text-white">Chatbot Admin</h1>
+				<button id="close-sidebar"
+					class="md:hidden text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors">
+					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+							d="M6 18L18 6M6 6l12 12" />
+					</svg>
+				</button>
+			</div>
+			<nav class="mt-6" role="navigation" aria-label="Menu principal">
+				<div class="px-6 py-2 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+					Gerenciamento de IAs
+				</div>
+				<a href="{{ url_for('index') }}"
+					class="flex items-center px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors {% if request.endpoint == 'index' %}sidebar-active{% endif %}"
+					aria-current="{% if request.endpoint == 'index' %}page{% else %}false{% endif %}">
+					<svg class="w-5 h-5 mr-3 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor"
+						viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+							d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+					</svg>
+					Início
+				</a>
+				<a href="{{ url_for('create_ia') }}"
+					class="flex items-center px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors {% if request.endpoint == 'create_ia' %}sidebar-active{% endif %}"
+					aria-current="{% if request.endpoint == 'create_ia' %}page{% else %}false{% endif %}">
+					<svg class="w-5 h-5 mr-3 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor"
+						viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+					</svg>
+					Criar IA
+				</a>
 
-				<!-- <img src="/static/img/chatbotacademylogo.png" class="h-8" alt="Aldev Chatbot Logo"> -->
-				<span class="text-2xl font-semibold text-gray-900 dark:text-white">Aldev Chatbot</span>
-			</a>
-			<button data-drawer-target="sidebar" data-drawer-toggle="sidebar" aria-controls="sidebar" type="button"
-				class="inline-flex items-center p-2 text-gray-500 rounded-lg md:hidden hover:bg-gray-100 dark:hover:bg-gray-700">
-				<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7">
-					</path>
+				<div
+					class="px-6 py-2 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mt-6">
+					Configurações de Prompts
+				</div>
+				<a href="{{ url_for('get_prompts_ia') }}"
+					class="flex items-center px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors {% if request.endpoint == 'get_prompts_ia' %}sidebar-active{% endif %}"
+					aria-current="{% if request.endpoint == 'get_prompts_ia' %}page{% else %}false{% endif %}">
+					<svg class="w-5 h-5 mr-3 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor"
+						viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+							d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+					</svg>
+					Prompts de IA
+				</a>
+				<a href="{{ url_for('get_owner_prompts') }}"
+					class="flex items-center px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors {% if request.endpoint == 'get_owner_prompts' %}sidebar-active{% endif %}"
+					aria-current="{% if request.endpoint == 'get_owner_prompts' %}page{% else %}false{% endif %}">
+					<svg class="w-5 h-5 mr-3 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor"
+						viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+							d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+					</svg>
+					Notificações do Dono
+				</a>
+
+				<!-- Toggle Dark Mode -->
+				<div class="px-6 py-3 mt-6 border-t border-gray-200 dark:border-gray-700">
+					<button id="theme-toggle" type="button"
+						class="flex items-center w-full p-2 text-sm font-medium text-gray-900 bg-white rounded-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 transition-colors"
+						aria-label="Alternar tema claro/escuro">
+						<svg id="theme-toggle-dark-icon" class="hidden w-4 h-4 mr-2" fill="currentColor"
+							viewBox="0 0 20 20">
+							<path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+						</svg>
+						<svg id="theme-toggle-light-icon" class="hidden w-4 h-4 mr-2" fill="currentColor"
+							xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+							viewBox="0 0 24 24">
+							<path fill-rule="evenodd"
+								d="M13 3a1 1 0 1 0-2 0v2a1 1 0 1 0 2 0V3ZM6.343 4.929A1 1 0 0 0 4.93 6.343l1.414 1.414a1 1 0 0 0 1.414-1.414L6.343 4.929Zm12.728 1.414a1 1 0 0 0-1.414-1.414l-1.414 1.414a1 1 0 0 0 1.414 1.414l1.414-1.414ZM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm-9 4a1 1 0 1 0 0 2h2a1 1 0 1 0 0-2H3Zm16 0a1 1 0 1 0 0 2h2a1 1 0 1 0 0-2h-2ZM7.757 17.657a1 1 0 1 0-1.414-1.414l-1.414 1.414a1 1 0 1 0 1.414 1.414l1.414-1.414Zm9.9-1.414a1 1 0 0 0-1.414 1.414l1.414 1.414a1 1 0 0 0 1.414-1.414l-1.414-1.414ZM13 19a1 1 0 1 0-2 0v2a1 1 0 1 0 2 0v-2Z"
+								clip-rule="evenodd" />
+						</svg>
+
+						<span id="theme-toggle-text">Tema Claro</span>
+					</button>
+				</div>
+			</nav>
+		</div>
+
+		<!-- Main Content -->
+		<div class="flex-1 flex flex-col">
+			<!-- Mobile Menu Button -->
+			<button id="open-sidebar"
+				class="md:hidden fixed top-4 left-4 z-50 p-2 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 transition-colors"
+				type="button" aria-label="Abrir menu">
+				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
 				</svg>
 			</button>
-		</div>
-	</nav>
 
-	<!-- Sidebar -->
-	<aside id="sidebar"
-		class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full md:translate-x-0 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700"
-		aria-label="Sidebar">
-		<div class="h-full flex flex-col">
-			<!-- Search Bar -->
-			<div class="p-4 border-b border-gray-200 dark:border-gray-700">
-				<div class="relative">
-					<input type="text" id="search-ia" placeholder="Buscar IA..."
-						class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
-					<svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none"
-						stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-							d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+			<!-- Content -->
+			<div class="p-6 overflow-auto flex-1">
+				<!-- Flash Messages -->
+				{% with messages = get_flashed_messages(with_categories=true) %}
+				{% if messages %}
+				{% for category, message in messages %}
+				<div class="flash-message mb-4 flex items-center p-4 text-sm rounded-lg {% if category == 'error' %}text-red-800 bg-red-50 dark:bg-gray-800 dark:text-red-400{% else %}text-green-800 bg-green-50 dark:bg-gray-800 dark:text-green-400{% endif %}"
+					role="alert">
+					<svg class="flex-shrink-0 inline w-4 h-4 mr-3" aria-hidden="true" fill="currentColor"
+						viewBox="0 0 20 20">
+						{% if category == 'error' %}
+						<path
+							d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+						{% else %}
+						<path
+							d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM13.5 6a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM13.226 12.344l-4.69-4.69a1 1 0 0 0-1.414 1.414l4.69 4.69a1 1 0 0 0 1.414-1.414Z" />
+						{% endif %}
 					</svg>
+					<span class="sr-only">Info</span>
+					<div class="flex-1">{{ message }}</div>
+					<button class="close-flash ml-4 text-current hover:text-opacity-75 transition-colors"
+						aria-label="Fechar mensagem">
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+								d="M6 18L18 6M6 6l12 12" />
+						</svg>
+					</button>
 				</div>
-			</div>
-			<!-- IA List -->
-			<div class="flex-1 overflow-y-auto">
-				<ul class="space-y-2 font-medium">
-					<li>
-						<a href="/"
-							class="flex items-center p-4 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-							<svg class="w-5 h-5 mr-2 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
-								height="24" fill="currentColor" viewBox="0 0 24 24">
-								<path fill-rule="evenodd"
-									d="M11.293 3.293a1 1 0 0 1 1.414 0l6 6 2 2a1 1 0 0 1-1.414 1.414L19 12.414V19a2 2 0 0 1-2 2h-3a1 1 0 0 1-1-1v-3h-2v3a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2v-6.586l-.293.293a1 1 0 0 1-1.414-1.414l2-2 6-6Z"
-									clip-rule="evenodd" />
-							</svg>
-							  
-							IAs
-						</a>
-					</li>
-			<!-- Rota prompts -->
-			<ul class="space-y-2 font-medium">
-				<li>
-					<a href="/get-prompts-ia"
-						class="flex items-center p-4 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-						<svg class="w-5 h-5 mr-2 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-							<path fill-rule="evenodd" d="M9 7V2.221a2 2 0 0 0-.5.365L4.586 6.5a2 2 0 0 0-.365.5H9Zm2 0V2h7a2 2 0 0 1 2 2v6.41A7.5 7.5 0 1 0 10.5 22H6a2 2 0 0 1-2-2V9h5a2 2 0 0 0 2-2Z" clip-rule="evenodd"/>
-							<path fill-rule="evenodd" d="M9 16a6 6 0 1 1 12 0 6 6 0 0 1-12 0Zm6-3a1 1 0 0 1 1 1v1h1a1 1 0 1 1 0 2h-1v1a1 1 0 1 1-2 0v-1h-1a1 1 0 1 1 0-2h1v-1a1 1 0 0 1 1-1Z" clip-rule="evenodd"/>
-						  </svg>
-						  
-						Prompts
-					</a>
-				</li>
-					{% for ia in ias %}
-					<li>
-						<button type="button"
-							class="flex items-center w-full p-4 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-							data-dropdown-toggle="dropdown-ia-{{ ia.id }}">
-							<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-									d="M5 12h14m-7-7v14"></path>
-							</svg>
-							{{ ia.name }}
-							<svg class="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-									d="M19 9l-7 7-7-7"></path>
-							</svg>
-						</button>
-						<div id="dropdown-ia-{{ ia.id }}"
-							class="hidden z-10 bg-white divide-y divide-gray-100 rounded-lg shadow w-56 dark:bg-gray-700">
-							<ul class="py-2 text-sm text-gray-700 dark:text-gray-200">
-								<li>
-									<a href="/get-leads-ia/{{ ia.id }}"
-										class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">Leads {{
-										ia.name }}</a>
-								</li>
-							</ul>
-						</div>
-					</li>
-					{% endfor %}
-				</ul>
-			</div>
-			<!-- Create New IA and Profile/Logout -->
-			<div class="p-4 border-t border-gray-200 dark:border-gray-700">
-				<a href="/create-ia"
-					class="flex items-center px-4 py-2 mb-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-					<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-					</svg>
-					Nova IA
-				</a>
-				<a href="/profile"
-					class="flex items-center p-4 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-					<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-							d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-					</svg>
-					Perfil
-				</a>
-				<a href="/logout"
-					class="flex items-center p-4 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-					<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-							d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1">
-						</path>
-					</svg>
-					Sair
-				</a>
-			</div>
-		</div>
-	</aside>
+				{% endfor %}
+				{% endif %}
+				{% endwith %}
 
-	<!-- Main Content -->
-	<main class="md:ml-64 p-6-10 md:p-6 h-full">
-		{% with messages = get_flashed_messages(with_categories=true) %}
-		{% if messages %}
-		<div class="mb-4">
-			{% for category, message in messages %}
-			<div class="flex items-center p-4 mb-4 text-sm {% if category == 'error' %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200{% else %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200{% endif %} rounded-lg"
-				role="alert">
-				<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-						d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-				</svg>
-				{{ message }}
-				<button type="button" class="ml-auto text-gray-400 hover:text-gray-600 dark:hover:text-white"
-					data-dismiss-target="#alert-{{ loop.index }}" aria-label="Close">
-					<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-						</path>
-					</svg>
-				</button>
-			</div>
-			{% endfor %}
-		</div>
-		{% endif %}
-		{% endwith %}
-		{% block content %}{% endblock %}
-	</main>
-
-	<!-- Confirmation Modal -->
-	<div id="confirmation-modal" tabindex="-1" aria-hidden="true"
-		class="fixed inset-0 z-50 hidden items-center justify-center p-4 overflow-y-auto">
-		<div class="relative w-full max-w-md bg-white rounded-lg shadow-lg dark:bg-gray-700">
-			<div class="flex justify-between items-center p-4 border-b dark:border-gray-600">
-				<h3 class="text-lg font-medium text-gray-900 dark:text-white">Confirmação</h3>
-				<button type="button" data-modal-hide="confirmation-modal"
-					class="text-gray-400 hover:text-gray-600 dark:hover:text-white">
-					<svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-						viewBox="0 0 14 14">
-						<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-							d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-					</svg>
-					<span class="sr-only">Fechar modal</span>
-				</button>
-			</div>
-			<div class="p-4">
-				<p class="text-gray-500 dark:text-gray-400">Tem certeza?</p>
-			</div>
-			<div class="flex justify-end space-x-2 p-4 border-t dark:border-gray-600">
-				<button type="button" data-modal-hide="confirmation-modal"
-					class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:text-white">Cancelar</button>
-				<button type="button" id="confirm-delete"
-					class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600">Confirmar</button>
+				{% block content %}
+				{% endblock %}
 			</div>
 		</div>
 	</div>
 
-	<!-- JavaScript for Search Filtering -->
-	<script>
-		document.addEventListener('DOMContentLoaded', function () {
-			const searchInput = document.getElementById('search-ia');
-			const iaItems = document.querySelectorAll('aside ul li:not(:first-child)');
+	<!-- Flowbite JS -->
+	<script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
 
-			searchInput.addEventListener('input', function () {
-				const query = searchInput.value.toLowerCase();
-				iaItems.forEach(item => {
-					const iaName = item.querySelector('button').textContent.trim().toLowerCase();
-					item.style.display = iaName.includes(query) ? '' : 'none';
-				});
+	<script>
+		// Dark mode toggle seguindo padrões do Flowbite
+		var themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+		var themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+		var themeToggleText = document.getElementById('theme-toggle-text');
+
+		// Função para alterar ícones e texto baseado no tema
+		function updateThemeToggle() {
+			if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+				themeToggleLightIcon.classList.remove('hidden');
+				themeToggleDarkIcon.classList.add('hidden');
+				themeToggleText.textContent = 'Tema Claro';
+			} else {
+				themeToggleDarkIcon.classList.remove('hidden');
+				themeToggleLightIcon.classList.add('hidden');
+				themeToggleText.textContent = 'Tema Escuro';
+			}
+		}
+
+		// Inicializar ícones
+		updateThemeToggle();
+
+		var themeToggleBtn = document.getElementById('theme-toggle');
+
+		themeToggleBtn.addEventListener('click', function () {
+			// Toggle ícones
+			themeToggleDarkIcon.classList.toggle('hidden');
+			themeToggleLightIcon.classList.toggle('hidden');
+
+			// Se definido no localStorage
+			if (localStorage.getItem('color-theme')) {
+				if (localStorage.getItem('color-theme') === 'light') {
+					document.documentElement.classList.add('dark');
+					localStorage.setItem('color-theme', 'dark');
+					themeToggleText.textContent = 'Tema Claro';
+				} else {
+					document.documentElement.classList.remove('dark');
+					localStorage.setItem('color-theme', 'light');
+					themeToggleText.textContent = 'Tema Escuro';
+				}
+			} else {
+				if (document.documentElement.classList.contains('dark')) {
+					document.documentElement.classList.remove('dark');
+					localStorage.setItem('color-theme', 'light');
+					themeToggleText.textContent = 'Tema Escuro';
+				} else {
+					document.documentElement.classList.add('dark');
+					localStorage.setItem('color-theme', 'dark');
+					themeToggleText.textContent = 'Tema Claro';
+				}
+			}
+		});
+
+		// Sidebar responsivo
+		const openSidebar = document.getElementById('open-sidebar');
+		const closeSidebar = document.getElementById('close-sidebar');
+		const sidebar = document.getElementById('sidebar');
+
+		openSidebar.addEventListener('click', () => sidebar.classList.add('open'));
+		closeSidebar.addEventListener('click', () => sidebar.classList.remove('open'));
+
+		// Fechar sidebar ao clicar fora (mobile)
+		document.addEventListener('click', function (event) {
+			const isClickInsideSidebar = sidebar.contains(event.target);
+			const isClickOnOpenButton = openSidebar.contains(event.target);
+
+			if (!isClickInsideSidebar && !isClickOnOpenButton && sidebar.classList.contains('open')) {
+				sidebar.classList.remove('open');
+			}
+		});
+
+		// Fechar mensagens flash
+		document.querySelectorAll('.close-flash').forEach(button => {
+			button.addEventListener('click', () => {
+				const message = button.closest('.flash-message');
+				message.style.opacity = '0';
+				setTimeout(() => message.remove(), 500);
 			});
+		});
+
+		// Auto-hide flash messages após 5 segundos
+		document.querySelectorAll('.flash-message').forEach(message => {
+			setTimeout(() => {
+				if (message.parentNode) {
+					message.style.opacity = '0';
+					setTimeout(() => {
+						if (message.parentNode) {
+							message.remove();
+						}
+					}, 500);
+				}
+			}, 5000);
 		});
 	</script>
 </body>

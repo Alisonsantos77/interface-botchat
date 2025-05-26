@@ -73,3 +73,27 @@ class Lead(db.Model):
         db.DateTime(timezone=True), server_default=db.func.now(), onupdate=db.func.now()
     )
     ia = relationship("IA", back_populates="leads")
+
+
+class OwnerPrompt(db.Model):
+    __tablename__ = "owner_prompts"
+    id = db.Column(db.Integer, primary_key=True, index=True)
+    ia_id = db.Column(db.Integer, db.ForeignKey("ias.id"), nullable=False)
+    prompt_text = db.Column(
+        db.String, nullable=False
+    )  
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    notify_channel = db.Column(db.String, nullable=False)  # whatsapp, email
+    notify_destination = db.Column(db.String, nullable=False)  # número do dono
+    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    updated_at = db.Column(
+        db.DateTime(timezone=True), server_default=db.func.now(), onupdate=db.func.now()
+    )
+
+    ia = relationship("IA", back_populates="owner_prompts")
+
+
+# Adicionar relacionamento na classe IA
+IA.owner_prompts = relationship(
+    "OwnerPrompt", back_populates="ia", cascade="all, delete-orphan"
+)

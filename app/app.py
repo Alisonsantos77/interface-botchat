@@ -1,7 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from dotenv import load_dotenv
 import os
-from models import db, IA, Prompt, IAConfig, Lead
+from models import db, IA, Prompt, IAConfig, Lead, OwnerPrompt
 from crypto import encrypt_data
 from loguru import logger
 from datetime import datetime
@@ -313,7 +313,9 @@ def delete_lead(id_lead):
 
 @app.route("/get-leads-ia/<int:ia_id>", methods=["GET"])
 def get_leads_ia(ia_id):
-    leads_query = Lead.query.filter_by(ia_id=ia_id).order_by(Lead.created_at.desc()) # Changed to desc()
+    leads_query = Lead.query.filter_by(ia_id=ia_id).order_by(
+        Lead.created_at.desc()
+    )  # Changed to desc()
     search_query = request.args.get("search_query", "").strip()
     items_per_page = 6  # numero por pagina
     current_page = request.args.get("page", 1, type=int)
@@ -337,42 +339,10 @@ def get_leads_ia(ia_id):
 
     # Consultar leads para a página atual
     leads = (
-        leads_query.order_by(Lead.created_at.desc()) # Added order_by
+        leads_query.order_by(Lead.created_at.desc())  # Added order_by
         .offset((current_page - 1) * items_per_page)
         .limit(items_per_page)
         .all()
-    )
-
-    leads_list = []
-    lead_id = int(request.args.get("lead_id", 0))
-    selected_lead = {}
-    for lead in leads:
-        lead_dict = {
-            "id": lead.id,
-            "ia_name": lead.ia.name,
-            "ia_id": lead.ia.id,
-            "name": lead.name,
-            "phone": lead.phone,
-            "message": lead.message,
-            "resume": lead.resume,
-            "created_at": lead.created_at.strftime("%d-%m-%Y %H:%M:%S"),
-            "updated_at": lead.updated_at,
-        }
-        if lead_id == lead.id:
-            selected_lead = lead_dict
-        leads_list.append(lead_dict)
-
-    logger.info(
-        f"[LEADS] Listando leads para IA {ia_id}: {[{'id': l['id'], 'name': l['name']} for l in leads_list]}"
-    )
-
-    return render_template(
-        "lead.html",
-        leads=leads_list,
-        selected_lead=selected_lead,
-        search_query=search_query,
-        current_page=current_page,
-        total_pages=total_pages,
     )
 
     leads_list = []
@@ -427,6 +397,148 @@ def get_info_lead(ia_lead):
     }
     logger.info(f"[INFO-LEAD] Exibindo informações do lead id {ia_lead}: {lead_dict}")
     return render_template("lead.html", selected_lead=lead_dict)
+
+
+@app.route("/owner-prompts", methods=["GET"])
+def get_owner_prompts():
+    owner_prompts = OwnerPrompt.query.all()
+    ias = IA.query.all()
+    prompts_list = [
+        {
+            "id": p.id,
+            "ia_name": p.ia.name,
+            "ia_id": p.ia.id,
+            "text": p.prompt_text,
+            "status": p.is_active,
+            "notify_channel": p.notify_channel,
+            "notify_destination": p.notify_destination,
+            "created_at": p.created_at.strftime("%d-%m-%Y %H:%M:%S"),
+        }
+        for p in owner_prompts
+    ]
+    logger.info(
+        f"[OWNER-PROMPTS] Listando prompts: {[{'id': p['id'], 'ia_name': p['ia_name']} for p in prompts_list]}"
+    )
+    return render_template("owner_prompt.html", prompts=prompts_list, unique_ias=ias)
+
+
+@app.route("/new-owner-prompt/<int:id_ia>", methods=["GET", "POST"])
+def new_owner_prompt(id_ia):
+    if request.method == "POST":
+        try:
+            prompt_text = request.form.get("text")
+            status = request.form.get("status")
+            ia_id = request.form.get("ia_id")
+            notify_channel = request.form.get("notify_channel")
+            notify_destination = request.form.get("notify_destination")
+            logger.info(
+                f"[NEW-OWNER-PROMPT] Criando prompt para IA {ia_id}: texto={prompt_text}, status={status}, canal={notify_channel}"
+            )
+            ia = IA.query.filter_by(id=ia_id).first()
+            if not ia:
+                logger.error(f"[NEW-OWNER-PROMPT] IA id {ia_id} não encontrada")
+                return redirect(url_for("get_owner_prompts"))
+            # Validação de placeholders
+            required_placeholders = [
+                "{lead_name}",
+                "{lead_phone}",
+                "{lead_interest}",
+                "{resume}",
+            ]
+            if not all(
+                placeholder in prompt_text for placeholder in required_placeholders
+            ):
+                flash(
+                    "O prompt deve incluir todos os placeholders: {lead_name}, {lead_phone}, {lead_interest}, {resume}.",
+                    "error",
+                )
+                return redirect(url_for("new_owner_prompt", id_ia=ia_id))
+            new_prompt = OwnerPrompt(
+                prompt_text=prompt_text,
+                is_active=True if status == "True" else False,
+                ia_id=ia_id,
+                notify_channel=notify_channel,
+                notify_destination=notify_destination,
+            )
+            db.session.add(new_prompt)
+            db.session.commit()
+            logger.success(f"[NEW-OWNER-PROMPT] Prompt criado para IA {ia_id}")
+        except Exception as ex:
+            logger.error(f"[NEW-OWNER-PROMPT] Erro ao criar prompt: {ex}")
+        return redirect(url_for("get_owner_prompts"))
+    ias = IA.query.all()
+    logger.info(f"[NEW-OWNER-PROMPT] Exibindo formulário para IA {id_ia}")
+    return render_template(
+        "owner_prompt_form.html", action="Criar", ia_id=id_ia, ias=ias
+    )
+
+
+@app.route("/edit-owner-prompt/<int:id_prompt>", methods=["GET", "POST"])
+def edit_owner_prompt(id_prompt):
+    prompt = OwnerPrompt.query.filter_by(id=id_prompt).first()
+    if not prompt:
+        logger.warning(f"[EDIT-OWNER-PROMPT] Prompt id {id_prompt} não encontrado")
+        return redirect(url_for("get_owner_prompts"))
+    if request.method == "POST":
+        try:
+            prompt_text = request.form.get("text")
+            status = request.form.get("status")
+            ia_id = request.form.get("ia_id")
+            notify_channel = request.form.get("notify_channel")
+            notify_destination = request.form.get("notify_destination")
+            logger.info(
+                f"[EDIT-OWNER-PROMPT] Editando prompt id {id_prompt}: texto={prompt_text}, status={status}, canal={notify_channel}"
+            )
+            # Validação de placeholders
+            required_placeholders = [
+                "{lead_name}",
+                "{lead_phone}",
+                "{lead_interest}",
+                "{resume}",
+            ]
+            if not all(
+                placeholder in prompt_text for placeholder in required_placeholders
+            ):
+                flash(
+                    "O prompt deve incluir todos os placeholders: {lead_name}, {lead_phone}, {lead_interest}, {resume}.",
+                    "error",
+                )
+                return redirect(url_for("edit_owner_prompt", id_prompt=id_prompt))
+            prompt.prompt_text = prompt_text
+            prompt.is_active = True if status == "True" else False
+            prompt.ia_id = ia_id
+            prompt.notify_channel = notify_channel
+            prompt.notify_destination = notify_destination
+            db.session.commit()
+            logger.success(f"[EDIT-OWNER-PROMPT] Prompt editado id {id_prompt}")
+        except Exception as ex:
+            logger.error(f"[EDIT-OWNER-PROMPT] Erro ao editar prompt: {ex}")
+        return redirect(url_for("get_owner_prompts"))
+    ias = IA.query.all()
+    return render_template(
+        "owner_prompt_form.html",
+        action="Editar",
+        owner_prompt=prompt,
+        ias=ias,
+        ia_id=prompt.ia_id,
+    )
+
+
+@app.route("/delete-owner-prompt/<int:id_prompt>", methods=["POST"])
+def delete_owner_prompt(id_prompt):
+    try:
+        prompt = OwnerPrompt.query.filter_by(id=id_prompt).first()
+        if not prompt:
+            logger.warning(
+                f"[DELETE-OWNER-PROMPT] Prompt id {id_prompt} não encontrado"
+            )
+            return redirect(url_for("get_owner_prompts"))
+        db.session.delete(prompt)
+        db.session.commit()
+        logger.success(f"[DELETE-OWNER-PROMPT] Prompt id {id_prompt} excluído")
+    except Exception as ex:
+        logger.error(f"[DELETE-OWNER-PROMPT] Erro ao excluir prompt: {ex}")
+    return redirect(url_for("get_owner_prompts"))
 
 
 if __name__ == "__main__":

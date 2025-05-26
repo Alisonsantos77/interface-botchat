@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Prompt do Dono{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h2 class="text-xl font-bold mb-6 text-gray-900 dark:text-white">{{ action }} Prompt do Dono</h2>
+        <form method="post" class="space-y-6">
+            <div>
+                <label for="ia_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">IA</label>
+                <select id="ia_id" name="ia_id"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    required>
+                    {% for ia in ias %}
+                    <option value="{{ ia.id }}" {% if ia.id==ia_id %}selected{% endif %}>{{ ia.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="template" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Modelo de Prompt</label>
+                <select id="template" name="template"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                    <option value="">Selecione um modelo</option>
+                    <option value="basic">Básico</option>
+                    <option value="detailed">Detalhado</option>
+                </select>
+            </div>
+            <div>
+                <label for="text" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Texto do Prompt</label>
+                <textarea id="text" name="text" rows="4"
+                    class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="Ex.: '🚨 Lead quente: {lead_name} ({lead_phone}) quer {lead_interest}. Resumo: {resume}'"
+                    required>{{ owner_prompt.prompt_text if owner_prompt else '' }}</textarea>
+                <div class="mt-4">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Placeholders Disponíveis</h3>
+                    <ul class="list-disc list-inside text-sm text-gray-600 dark:text-gray-400">
+                        <li>{lead_name}: Nome do lead</li>
+                        <li>{lead_phone}: Telefone do lead</li>
+                        <li>{lead_interest}: Interesse do lead (se disponível)</li>
+                        <li>{resume}: Resumo do lead</li>
+                    </ul>
+                </div>
+                <div id="preview" class="mt-4 p-4 border rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"></div>
+            </div>
+            <div>
+                <label for="notify_channel" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Canal de Notificação</label>
+                <select id="notify_channel" name="notify_channel"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    required>
+                    <option value="whatsapp" {% if owner_prompt and owner_prompt.notify_channel=='whatsapp' %}selected{% endif %}>WhatsApp</option>
+                    <option value="email" {% if owner_prompt and owner_prompt.notify_channel=='email' %}selected{% endif %}>E-mail</option>
+                </select>
+            </div>
+            <div>
+                <label for="notify_destination" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Destino da Notificação</label>
+                <input type="text" id="notify_destination" name="notify_destination"
+                    value="{{ owner_prompt.notify_destination if owner_prompt else '' }}"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="Ex.: +5511999999999 ou email@exemplo.com" required>
+            </div>
+            <div>
+                <label for="status" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Status</label>
+                <select id="status" name="status"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    required>
+                    <option value="True" {% if owner_prompt and owner_prompt.is_active %}selected{% endif %}>Ativo</option>
+                    <option value="False" {% if owner_prompt and not owner_prompt.is_active %}selected{% endif %}>Inativo</option>
+                </select>
+            </div>
+            <div class="flex gap-4">
+                <button type="submit"
+                    class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    {{ action }}
+                </button>
+                <a href="{{ url_for('index') }}"
+                    class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const promptText = document.getElementById('text');
+        const preview = document.getElementById('preview');
+        const template = document.getElementById('template');
+        const sampleData = {
+            lead_name: "John Doe",
+            lead_phone: "+1234567890",
+            lead_interest: "Product X",
+            resume: "Interested in purchasing Product X"
+        };
+
+        function updatePreview() {
+            let text = promptText.value || '';
+            for (const [key, value] of Object.entries(sampleData)) {
+                const placeholder = `{${key}}`;
+                text = text.split(placeholder).join(value);
+            }
+            preview.innerHTML = text;
+        }
+
+        template.addEventListener('change', function() {
+            const selectedTemplate = this.value;
+            if (selectedTemplate === 'basic') {
+                promptText.value = "New lead: {lead_name} ({lead_phone})";
+            } else if (selectedTemplate === 'detailed') {
+                promptText.value = "🚨 Hot Lead: {lead_name} ({lead_phone}) is interested in {lead_interest}. Summary: {resume}";
+            } else {
+                promptText.value = '';
+            }
+            updatePreview();
+        });
+
+        promptText.addEventListener('input', updatePreview);
+        updatePreview(); // Atualização inicial
+    });
+</script>
+{% endblock %}
