@@ -21,6 +21,58 @@ db.init_app(app)
 def inject_now():
     return {"now": datetime.now}
 
+import re
+
+
+def formatar_horarios_em_texto(texto):
+    if not isinstance(texto, str):
+        return texto
+
+    texto = re.sub(r"\b(\d{1,2}):(\d{2})\b", r"\1h\2", texto)
+
+    def _converter_quatro_digitos(match):
+        h, m = match.group(1), match.group(2)
+        hh, mm = int(h), int(m)
+        if 0 <= hh < 24 and 0 <= mm < 60:
+            return f"{h}h{m}"
+        return match.group(0)
+
+    texto = re.sub(r"\b(\d{1,2})(\d{2})\b", _converter_quatro_digitos, texto)
+    return texto
+
+
+def formatar_telefone(numero: str) -> str:
+    """
+    Recebe um número de telefone (string) no formato “5511998765432” (DDI + DDD + número)
+    e converte para: "+55 (11) 99876-5432".
+    Se não casar com o regex, retorna o próprio valor sem alteração.
+    """
+    if not numero:
+        return numero
+
+    digitos = re.sub(r"\D", "", numero)
+
+    # Regex para 55 + DDD(2 dígitos) + número(8 ou 9 dígitos)
+    match = re.match(r"^55(\d{2})(\d{4,5})(\d{4})$", digitos)
+    if match:
+        ddd = match.group(1)
+        parte1 = match.group(2)
+        parte2 = match.group(3)
+        return f"+55 ({ddd}) {parte1}-{parte2}"
+
+    return numero
+
+
+def formatar_data_br(dt: datetime) -> str:
+    """
+    Converte um objeto datetime para string no formato:
+      "dd/mm/aaaa às HHhMM"
+    Exemplo: datetime(2025, 6, 5, 19, 38, 8) → "05/06/2025 às 19h38"
+    """
+    if not isinstance(dt, datetime):
+        return ""
+    return dt.strftime("%d/%m/%Y às %Hh%M")
+
 
 @app.route("/")
 def index():
@@ -313,61 +365,78 @@ def delete_lead(id_lead):
 
 @app.route("/get-leads-ia/<int:ia_id>", methods=["GET"])
 def get_leads_ia(ia_id):
-    leads_query = Lead.query.filter_by(ia_id=ia_id).order_by(
-        Lead.created_at.desc()
-    )  # Changed to desc()
+    # 1) Verifica se a IA existe
+    ia = IA.query.filter_by(id=ia_id).first()
+    if not ia:
+        flash(f"IA com ID {ia_id} não encontrada.", "warning")
+        return redirect(url_for("index"))
+
+    # 2) Parâmetros de busca e paginação
     search_query = request.args.get("search_query", "").strip()
-    items_per_page = 6  # numero por pagina
+    items_per_page = 6
     current_page = request.args.get("page", 1, type=int)
 
-    # Consultar leads com filtro de busca
+    # 3) Monta a query base (somente leads desta IA)
     leads_query = Lead.query.filter_by(ia_id=ia_id)
+
+    # 4) Aplica filtro de busca (nome ou telefone)
     if search_query:
         leads_query = leads_query.filter(
             (Lead.name.ilike(f"%{search_query}%"))
             | (Lead.phone.ilike(f"%{search_query}%"))
         )
 
-    # Contar total de leads
+    # 5) Ordena pela última atualização (updated_at DESC)
+    leads_query = leads_query.order_by(Lead.updated_at.desc())
+
+    # 6) Conta total de leads para calcular páginas
     total_leads = leads_query.count()
-
-    # Calcular total de páginas
     total_pages = (total_leads + items_per_page - 1) // items_per_page
-
-    # Garantir que current_page seja válido
     current_page = max(1, min(current_page, total_pages))
 
-    # Consultar leads para a página atual
+    # 7) Faz paginação e traz os registros
     leads = (
-        leads_query.order_by(Lead.created_at.desc())  # Added order_by
-        .offset((current_page - 1) * items_per_page)
+        leads_query.offset((current_page - 1) * items_per_page)
         .limit(items_per_page)
         .all()
     )
 
+    # 8) Constrói a lista de dicionários para enviar ao template
     leads_list = []
     lead_id = int(request.args.get("lead_id", 0))
     selected_lead = {}
+
     for lead in leads:
         lead_dict = {
             "id": lead.id,
-            "ia_name": lead.ia.name,
-            "ia_id": lead.ia.id,
+            "ia_name": ia.name,
+            "ia_id": ia.id,
             "name": lead.name,
-            "phone": lead.phone,
-            "message": lead.message,
+            "phone": formatar_telefone(lead.phone),
+            # Aplica formatação de horário dentro da mensagem
+            "message": formatar_horarios_em_texto(lead.message),
             "resume": lead.resume,
-            "created_at": lead.created_at.strftime("%d-%m-%Y %H:%M:%S"),
-            "updated_at": lead.updated_at,
+            # Formata created_at e updated_at para “dd/mm/aaaa às HHhMM”
+            "created_at": formatar_data_br(lead.created_at),
+            "last_update": formatar_data_br(lead.updated_at),
         }
+        # Se este lead estiver selecionado (via query string ?lead_id=XYZ), guarda para detalhe
         if lead_id == lead.id:
             selected_lead = lead_dict
+
         leads_list.append(lead_dict)
 
+    # 9) Mensagem de log (opcional)
     logger.info(
-        f"[LEADS] Listando leads para IA {ia_id}: {[{'id': l['id'], 'name': l['name']} for l in leads_list]}"
+        f"[LEADS] Listando leads para IA {ia_id} "
+        f"(página {current_page}/{total_pages}): "
+        f"{[l['id'] for l in leads_list]}"
     )
 
+    # 10) Renderiza o template, passando:
+    #    - leads: lista com dados já formatados
+    #    - selected_lead: caso o usuário tenha clicado num lead
+    #    - search_query, current_page, total_pages para controle de paginação
     return render_template(
         "lead.html",
         leads=leads_list,

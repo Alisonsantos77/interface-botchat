@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Leads{% endblock %}
+
 {% block content %}
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
 	<div class="flex flex-col lg:flex-row h-[80vh]">
@@ -15,63 +16,96 @@
 						<svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
 							fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-								d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+								d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
 						</svg>
 					</div>
 					<button type="submit"
-						class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Buscar</button>
+						class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+						Buscar
+					</button>
 				</form>
 			</div>
+
 			<!-- Leads List -->
 			<ul class="overflow-y-auto flex-1 divide-y divide-gray-200 dark:divide-gray-700">
 				{% for lead in leads %}
 				<li>
 					<a href="?lead_id={{ lead.id }}&page={{ current_page }}{% if search_query %}&search_query={{ search_query }}{% endif %}"
 						class="flex items-center gap-4 p-4 hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors {% if selected_lead and lead.id == selected_lead.id %}bg-blue-100 dark:bg-blue-900{% endif %}">
+						<!-- Avatar -->
 						<img class="w-10 h-10 rounded-full border"
 							src="https://api.dicebear.com/9.x/notionists/svg?seed={{ lead.name|urlencode }}"
-							alt="{{ lead.name }}">
+							alt="{{ lead.name }}" />
+
+						<!-- Main info -->
 						<div class="flex-1 min-w-0">
+							<!-- Name and resume -->
 							<div class="flex items-center gap-2">
-								<span class="font-semibold text-gray-900 dark:text-white truncate">{{ lead.name
-									}}</span>
+								<span class="font-semibold text-gray-900 dark:text-white truncate">
+									{{ lead.name }}
+								</span>
 								{% if lead.resume %}
 								<span
-									class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">{{
-									lead.resume|truncate(15) }}</span>
+									class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+									{{ lead.resume|truncate(15) }}
+								</span>
 								{% endif %}
 							</div>
-							<div class="text-sm text-gray-500 dark:text-gray-400 truncate">{{ lead.phone }}</div>
-							<div class="text-xs text-gray-400 dark:text-gray-500 mt-1">Criado: {{ lead.created_at }}
+
+							<!-- Phone -->
+							<div class="text-sm text-gray-500 dark:text-gray-400 truncate">
+								{{ lead.phone }}
+							</div>
+
+							<!-- Created and last update -->
+							<div class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+								Criado: {{ lead.created_at }}
+							</div>
+							<div class="text-xs text-gray-400 dark:text-gray-500">
+								Atualizado: {{ lead.last_update }}
 							</div>
 						</div>
+
+						<!-- Message count badge (if list of messages) -->
 						{% if lead.message and lead.message|length > 0 %}
 						<span
-							class="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-500 rounded-full">{{
-							lead.message|length }}</span>
+							class="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-500 rounded-full">
+							{{ lead.message|length }}
+						</span>
 						{% endif %}
 					</a>
 				</li>
 				{% endfor %}
 			</ul>
+
 			<!-- Paginação -->
 			{% if total_pages and total_pages > 1 %}
 			<nav class="p-4 flex justify-center" aria-label="Page navigation">
 				<ul class="inline-flex -space-x-px text-sm">
+					<!-- Anterior -->
 					<li>
-						<a href="?page={{ current_page-1 if current_page > 1 else 1 }}{% if search_query %}&search_query={{ search_query }}{% endif %}"
-							class="flex items-center justify-center px-3 h-8 border border-gray-300 rounded-l-lg hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 {% if current_page == 1 %}pointer-events-none opacity-50{% endif %}">Anterior</a>
+						<a href="?lead_id={{ selected_lead.id if selected_lead else 0 }}&page={{ current_page-1 if current_page > 1 else 1 }}{% if search_query %}&search_query={{ search_query }}{% endif %}"
+							class="flex items-center justify-center px-3 h-8 border border-gray-300 rounded-l-lg hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 {% if current_page == 1 %}pointer-events-none opacity-50{% endif %}">
+							Anterior
+						</a>
 					</li>
+
+					<!-- Números de página -->
 					{% for page in range(1, total_pages + 1) %}
 					<li>
-						<a href="?page={{ page }}{% if search_query %}&search_query={{ search_query }}{% endif %}"
-							class="flex items-center justify-center px-3 h-8 border border-gray-300 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 {% if page == current_page %}bg-blue-50 text-blue-600 dark:bg-gray-700 dark:text-white{% endif %}">{{
-							page }}</a>
+						<a href="?lead_id={{ selected_lead.id if selected_lead else 0 }}&page={{ page }}{% if search_query %}&search_query={{ search_query }}{% endif %}"
+							class="flex items-center justify-center px-3 h-8 border border-gray-300 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 {% if page == current_page %}bg-blue-50 text-blue-600 dark:bg-gray-700 dark:text-white{% endif %}">
+							{{ page }}
+						</a>
 					</li>
 					{% endfor %}
+
+					<!-- Próximo -->
 					<li>
-						<a href="?page={{ current_page+1 if current_page < total_pages else total_pages }}{% if search_query %}&search_query={{ search_query }}{% endif %}"
-							class="flex items-center justify-center px-3 h-8 border border-gray-300 rounded-r-lg hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 {% if current_page == total_pages %}pointer-events-none opacity-50{% endif %}">Próximo</a>
+						<a href="?lead_id={{ selected_lead.id if selected_lead else 0 }}&page={{ current_page+1 if current_page < total_pages else total_pages }}{% if search_query %}&search_query={{ search_query }}{% endif %}"
+							class="flex items-center justify-center px-3 h-8 border border-gray-300 rounded-r-lg hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 {% if current_page == total_pages %}pointer-events-none opacity-50{% endif %}">
+							Próximo
+						</a>
 					</li>
 				</ul>
 			</nav>
@@ -86,18 +120,22 @@
 				class="flex items-center gap-4 p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
 				<img class="w-12 h-12 rounded-full border"
 					src="https://api.dicebear.com/9.x/notionists/svg?seed={{ selected_lead.name|urlencode }}"
-					alt="{{ selected_lead.name }}">
+					alt="{{ selected_lead.name }}" />
 				<div class="flex flex-col gap-1">
 					<span class="font-bold text-lg text-gray-900 dark:text-white">{{ selected_lead.name }}</span>
 					<span class="text-sm text-gray-500 dark:text-gray-400">{{ selected_lead.phone }}</span>
 					<span class="text-xs text-gray-400 dark:text-gray-500">Criado: {{ selected_lead.created_at }}</span>
+					<span class="text-xs text-gray-400 dark:text-gray-500">Atualizado: {{ selected_lead.last_update
+						}}</span>
 					{% if selected_lead.resume %}
 					<span
-						class="mt-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">{{
-						selected_lead.resume }}</span>
+						class="mt-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+						{{ selected_lead.resume }}
+					</span>
 					{% endif %}
 				</div>
 				<div class="flex-1"></div>
+				<!-- Botão de excluir lead -->
 				<button type="button" data-modal-target="confirm-delete-lead-{{ selected_lead.id }}"
 					data-modal-toggle="confirm-delete-lead-{{ selected_lead.id }}"
 					data-delete-url="{{ url_for('delete_lead', id_lead=selected_lead.id) }}"
@@ -110,7 +148,8 @@
 					Excluir
 				</button>
 			</div>
-			<!-- Modal para exclusão -->
+
+			<!-- Modal para confirmação de exclusão -->
 			<div id="confirm-delete-lead-{{ selected_lead.id }}" tabindex="-1" aria-hidden="true"
 				class="fixed inset-0 z-50 hidden items-center justify-center p-4 overflow-y-auto">
 				<div class="relative w-full max-w-md bg-white rounded-lg shadow-lg dark:bg-gray-700">
@@ -131,7 +170,9 @@
 					</div>
 					<div class="flex justify-end space-x-2 p-4 border-t dark:border-gray-600">
 						<button type="button" data-modal-hide="confirm-delete-lead-{{ selected_lead.id }}"
-							class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:text-white">Cancelar</button>
+							class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:text-white">
+							Cancelar
+						</button>
 						<form action="{{ url_for('delete_lead', id_lead=selected_lead.id) }}" method="POST">
 							<button type="submit"
 								class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600">
@@ -140,15 +181,17 @@
 						</form>
 					</div>
 				</div>
-			</div> <!-- Chat Messages -->
+			</div>
+
+			<!-- Chat Messages -->
 			<div class="flex-1 overflow-y-auto p-6 space-y-6 bg-white dark:bg-gray-900">
 				{% if selected_lead.message %}
 				{% for msg in selected_lead.message %}
-				{% set is_user = msg.role == "user" %}
+				{% set is_user = (msg.role == "user") %}
 				<div class="flex {{ 'justify-end' if is_user else 'justify-start' }} items-end gap-3">
 					{% if not is_user %}
 					<img class="w-8 h-8 rounded-full border" src="https://api.dicebear.com/9.x/notionists/svg?seed=Bot"
-						alt="Bot">
+						alt="Bot" />
 					{% endif %}
 					<div class="max-w-[70%]">
 						<div class="flex items-center gap-2">
@@ -158,26 +201,32 @@
 							</div>
 							{% if msg.is_new %}
 							<span
-								class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">Novo</span>
+								class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+								Novo
+							</span>
 							{% endif %}
 						</div>
-						<span class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ msg.timestamp if msg.timestamp
-							else '' }}</span>
+						<span class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+							{{ msg.timestamp if msg.timestamp else '' }}
+						</span>
 					</div>
 					{% if is_user %}
 					<img class="w-8 h-8 rounded-full border"
 						src="https://api.dicebear.com/9.x/notionists/svg?seed={{ selected_lead.name|urlencode }}"
-						alt="User">
+						alt="User" />
 					{% endif %}
 				</div>
 				{% endfor %}
 				{% else %}
-				<div class="text-gray-400 dark:text-gray-500 text-center mt-8">Sem mensagens</div>
+				<div class="text-gray-400 dark:text-gray-500 text-center mt-8">
+					Sem mensagens
+				</div>
 				{% endif %}
 			</div>
 			{% else %}
-			<div class="flex-1 flex items-center justify-center text-gray-400 dark:text-gray-500">Selecione um lead para
-				ver as mensagens</div>
+			<div class="flex-1 flex items-center justify-center text-gray-400 dark:text-gray-500">
+				Selecione um lead para ver as mensagens
+			</div>
 			{% endif %}
 		</section>
 	</div>
